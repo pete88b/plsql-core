@@ -1,0 +1,4 @@
+add config option for logger_data_recent view - e.g. logger_utils.get_seconds_for_recent
+
+add per module config for feedback
+
