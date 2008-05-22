@@ -1,0 +1,1 @@
+Possibly add functions is_true_value(varchar2) ... for case insensitivity
