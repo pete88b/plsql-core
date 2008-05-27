@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,9 +34,9 @@ public class ExtractorMain {
     private String outputDirectoryName = "";
 
     /**
-     * The size of buffer to use when reading zip entries.
+     * The size of buffer to use when doing buffered IO (reading zip entries in this case).
      */
-    private int readBufferSize = 1024;
+    private static final int IO_BUFFER_SIZE = 1024;
     
     /**
      * Creates a new instance of ExtractorMain to extract the contents of this project.
@@ -130,32 +131,6 @@ public class ExtractorMain {
     }
     
     /**
-     * Returns the name of the jar that contains classFromJar.
-     * 
-     * @see #classFromJar
-     * @return 
-     *   The name of the jar that this code is running in.
-     * @throws RuntimeException
-     *   If we can't get the name of the jar that contains classFromJar.
-     */
-    private String getJarFileName() throws RuntimeException {
-        try {
-            return classFromJar.
-                    getProtectionDomain().
-                    getCodeSource().
-                    getLocation().
-                    toString().
-                    substring("file:".length()).
-                    replaceAll("%20", " ");
-            
-        } catch (Exception ex) {
-            throw new RuntimeException("failed to get jar file name", ex);
-            
-        }
-        
-    }
-
-    /**
      * Creates a file for the specified zip entry.
      * 
      * @param jar
@@ -172,7 +147,7 @@ public class ExtractorMain {
                 new FileOutputStream(
                 outputDirectoryName + "plsql-core" + File.separator + entry.getName()));
 
-        byte[] data = new byte[readBufferSize];
+        byte[] data = new byte[IO_BUFFER_SIZE];
 
         for (int i = jar.read(data, 0, data.length); i != -1; i = jar.read(data, 0, data.length)) {
             out.write(data, 0, i);
@@ -194,9 +169,16 @@ public class ExtractorMain {
     private void extract(final ZipEntryFilter filter) throws Exception {
         mkDir("plsql-core");
 
+        // get the URI for the jar that classFromJar is in
+        URI jarUri = classFromJar.getProtectionDomain().
+                    getCodeSource().
+                    getLocation().
+                    toURI();
+        
         ZipInputStream jar = new ZipInputStream(
                 new BufferedInputStream(
-                new FileInputStream(getJarFileName())));
+                new FileInputStream(
+                new File(jarUri))));
         
         for (ZipEntry entry = jar.getNextEntry(); entry != null; entry = jar.getNextEntry()) {
             if (!filter.include(entry)) {
@@ -246,11 +228,13 @@ public class ExtractorMain {
                 if (!name.startsWith("plsql")) {
                     return false;
                 }
-                int secondForwardSlash = name.indexOf("/", 6); // 6= "plsql/".length()
+                // 6 = "plsql/".length()
+                int secondForwardSlash = name.indexOf("/", 6);
                 if (secondForwardSlash < 0) {
                     return false;
                 }
-                return includes.contains(name.substring(6, name.indexOf("/", 6)));
+                return includes.contains(
+                        name.substring(6, name.indexOf("/", 6)));
             }
         });
     }
