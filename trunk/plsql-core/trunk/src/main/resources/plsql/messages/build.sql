@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/*
+  Build script for messages.
+
+  No dependencies.
+
+*/
+
 PROMPT ___ Start of messages build.sql ___
 
 @@messages.pck

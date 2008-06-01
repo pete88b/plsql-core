@@ -16,6 +16,15 @@
 
 CREATE OR REPLACE PACKAGE messages 
 IS
+  
+  /*
+    This package defines a standard interface for sending application messages.
+
+    This package also provides a "default" implementation that sends messages
+    to the event mediator. 
+    Using this implementation, anyone interested in receiving messages can just 
+    register as an observer of the 'message' event.
+  */
 
   /*
     Type used to indicate that a message contains debug information.
@@ -45,6 +54,17 @@ IS
   
   /*
     Sends a "message" event via the event_mediator.
+    
+    The event name is 'message' and the event will be add_message with 3
+    VARCHAR2 arguments. e.g.
+      add_message('INFO', 'a summary', 'some detail')
+    
+    Parameter p_level 
+      The level of the message. Use one of the message_level constants.
+    Parameter p_summary 
+      The message summary.
+    Parameter p_detail 
+      The message detail.
   */
   PROCEDURE add_message(
     p_level IN VARCHAR2,
@@ -53,8 +73,8 @@ IS
   );
   
   /*
-    Calls assert.is_true to check that the specified level is one of the
-    message levels defined by this package.
+    Raises an exception if the specified level is not one of the levels defined
+    by the message_level constants in this package.
   */
   PROCEDURE check_message_level(
     p_level IN VARCHAR2
@@ -64,23 +84,10 @@ END messages;
 /
 CREATE OR REPLACE PACKAGE BODY messages 
 IS
-  /*
-  */
-  PROCEDURE assert_is_true(
-    p_condition IN BOOLEAN,
-    p_message IN VARCHAR2  := NULL
-  )
-  IS
-  BEGIN
-    IF (p_condition IS NULL OR NOT p_condition)
-    THEN
-      RAISE_APPLICATION_ERROR(
-        -20000, p_message);
-        
-    END IF;
-         
-  END assert_is_true;
   
+  /*
+    Sends a "message" event via the event_mediator.
+  */
   PROCEDURE add_message(
     p_level IN VARCHAR2,
     p_summary IN VARCHAR2,
@@ -100,11 +107,14 @@ IS
     event_mediator.event(
       'message',
       'add_message(''' || p_level || ''', ''' || 
-      REPLACE(p_summary, '''', '''''') || ''', ''' || 
-      REPLACE(p_detail, '''', '''''') || ''')');
+        REPLACE(p_summary, '''', '''''') || ''', ''' || 
+        REPLACE(p_detail, '''', '''''') || ''')');
     
   END add_message;
   
+  /*
+    Check that the specified level is valid, raising an exception if not.
+  */
   PROCEDURE check_message_level(
     p_level IN VARCHAR2
   )
@@ -112,14 +122,23 @@ IS
   BEGIN
     logger.entering('check_message_level');
     
-    assert_is_true(
-      p_level IN (
-        message_level_debug,
-        message_level_error,
-        message_level_fatal,
-        message_level_info,
-        message_level_warning),
-      '"' || p_level || '" is not a valid message level');
+    IF (p_level IS NULL)
+    THEN
+      RAISE_APPLICATION_ERROR(
+        -20000, 'NULL is not a valid message level');
+        
+    END IF;
+
+    IF (p_level NOT IN (message_level_debug,
+                        message_level_error,
+                        message_level_fatal,
+                        message_level_info,
+                        message_level_warning))
+    THEN
+      RAISE_APPLICATION_ERROR(
+        -20000, '"' || p_level || '" is not a valid message level');
+        
+    END IF;
     
   END check_message_level;
     
