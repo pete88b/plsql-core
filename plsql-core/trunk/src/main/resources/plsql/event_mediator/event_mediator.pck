@@ -150,8 +150,8 @@ IS
   /*
     Removes all observers.
     
-    If an observers have been registered, the registration of all observers
-    of any/all events will be removed. 
+    If any observers have been registered, the registration of all observers
+    of all events will be removed. 
     Otherwise this procedure does nothing.
     
     Commits: No
@@ -225,6 +225,7 @@ IS
   
   
   /*
+    Add an observer.
   */
   PROCEDURE add_observer(
     p_event_name IN VARCHAR2,
@@ -247,6 +248,7 @@ IS
   
   
   /*
+    Remove an observer of a specific event.
   */ 
   PROCEDURE remove_observer(
     p_event_name IN VARCHAR2,
@@ -263,8 +265,8 @@ IS
       ', p_observer=' || p_observer);
     
     DELETE FROM event_mediator_data
-    WHERE  event_name = LOWER(p_event_name)
-    AND    observer = LOWER(p_observer);
+     WHERE event_name = LOWER(p_event_name)
+       AND observer = LOWER(p_observer);
       
     logger.fb(SQL%ROWCOUNT || ' rows deleted');
       
@@ -274,6 +276,7 @@ IS
   
   
   /*
+    Remove an observer.
   */
   PROCEDURE remove_observer(
     p_observer IN VARCHAR2
@@ -288,7 +291,7 @@ IS
       'p_observer=' || p_observer);
     
     DELETE FROM event_mediator_data
-    WHERE  observer = LOWER(p_observer);
+     WHERE observer = LOWER(p_observer);
       
     logger.fb(SQL%ROWCOUNT || ' rows deleted');
       
@@ -298,6 +301,7 @@ IS
   
   
   /*
+    Remove all observers.
   */
   PROCEDURE remove_observers
   IS
@@ -314,6 +318,7 @@ IS
   
   
   /*
+    Publish an event.
   */
   PROCEDURE event(
     p_event_name IN VARCHAR2,
@@ -322,8 +327,11 @@ IS
     p_fail_if_no_observers IN BOOLEAN := FALSE
   )
   IS
+    -- holds p_event which may have been cleaned up a bit. e.g. whitespace trimmed
     l_event VARCHAR2(32767);
+    -- set to false if we find at least one observer
     l_no_observers BOOLEAN := TRUE;
+    -- holds the PL/SQL call that we will make. (i.e. observer name and event)
     l_call VARCHAR2(32767);
     
   BEGIN
@@ -338,7 +346,7 @@ IS
     -- remove leading and trailing blank spaces from the event
     l_event := TRIM(p_event);
     
-    logger.fb('after trim. l_event=' || l_event);
+    logger.fb5('after trim. l_event=' || l_event);
     
     -- if event ends with a semi-colon, remove it
     IF (SUBSTR(l_event, -1, 1) = ';')
@@ -348,9 +356,10 @@ IS
       
     END IF;
     
+    -- go through all observers calling the specified procedure
     FOR i IN (SELECT *
-              FROM   event_mediator_data
-              WHERE  event_name = LOWER(p_event_name))
+                FROM event_mediator_data
+               WHERE event_name = LOWER(p_event_name))
     LOOP
       l_no_observers := FALSE;
       
