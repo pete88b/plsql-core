@@ -203,10 +203,10 @@ public class ExtractorMain {
             
             if (entry.isDirectory()) {
                 mkDir("plsql-core" + File.separator + entry.getName());
-
+                
             } else {
                 mkFile(jar, entry);
-
+                
             }
             
         }
@@ -222,11 +222,7 @@ public class ExtractorMain {
      *   If the extract fails.
      */
     public void extract() throws Exception {
-        extract(new ZipEntryFilter() {
-            public boolean include(final ZipEntry entry) {
-                return entry.getName().startsWith("plsql");
-            }
-        });
+        extract(DEFAULT_ZIP_ENTRY_FILTER);
     }
     
     /**
@@ -240,10 +236,10 @@ public class ExtractorMain {
     public void extract(final List<String> includes) throws Exception {
         extract(new ZipEntryFilter() {
             public boolean include(final ZipEntry entry) {
-                String name = entry.getName();
-                if (!name.startsWith("plsql")) {
+                if (!DEFAULT_ZIP_ENTRY_FILTER.include(entry)) {
                     return false;
                 }
+                String name = entry.getName();
                 // 6 = "plsql/".length()
                 int secondForwardSlash = name.indexOf("/", 6);
                 if (secondForwardSlash < 0) {
@@ -353,5 +349,41 @@ public class ExtractorMain {
         boolean include(ZipEntry entry);
         
     } // End of interface ZipEntryFilter
+    
+    /**
+     * The default zip entry filter that excludes any entry whos name does not
+     * begin with plsql, ends with .txt or contains more than 2 forward slashes.
+     * Entries with names that contain more than 2 forward slashes will be for 
+     * module sub-directories, such as plsql/properties/utilities/ and should not 
+     * normally be extracted.
+     */
+    private static final ZipEntryFilter DEFAULT_ZIP_ENTRY_FILTER = new ZipEntryFilter() {
+        
+        /**
+         * Excludes any entry whos name does not begin with plsql, ends with .txt or 
+         * contains more than 2 forward slashes.
+         * 
+         * @param entry 
+         *   A zip entry.
+         * @return 
+         *   true if the entry name begins with plsql, does not end with .txt and contains
+         *   no more than 2 forward slashes.
+         */
+        public boolean include(final ZipEntry entry) {
+            String entryName = entry.getName();
+            
+            // get the position of the first,
+            int forwardSlashPosition = entryName.indexOf("/");
+            // second,
+            forwardSlashPosition = entryName.indexOf("/", forwardSlashPosition + 1);
+            // then third forward slash in the entry name
+            forwardSlashPosition = entryName.indexOf("/", forwardSlashPosition + 1);
+            
+            return entryName.startsWith("plsql") &&
+                    !entryName.endsWith(".txt") &&
+                    forwardSlashPosition == -1;
+        }
+        
+    };
     
 } // End of class ExtractorMain
