@@ -44,7 +44,7 @@ public class ExtractorMainTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         instance = new ExtractorMain();
-        instance.setOutputDirectoryName("target/");
+        instance.setOutputDirectoryName("target");
     }
 
     @Override
@@ -52,6 +52,16 @@ public class ExtractorMainTest extends TestCase {
         super.tearDown();
     }
 
+    public void testConstrucors() throws Exception {
+        try {
+            new ExtractorMain(null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
+        new ExtractorMain(String.class);
+    }
+            
+    
     /**
      * Test of extract method, of class ExtractorMain.
      */
@@ -151,14 +161,28 @@ public class ExtractorMainTest extends TestCase {
         
     }
 
-    public void testX() throws Exception {
-        System.out.println(
-                this.getClass().
-                getProtectionDomain().
-                getCodeSource().
-                getLocation().
-                toString().
-                substring("file:/".length()));
+    /**
+     * Test of getOutputDirectoryName method, of class ExtractorMain.
+     */
+    public void testGetOutputDirectoryName() {
+        System.out.println("getOutputDirectoryName");
+        assertEquals("", new ExtractorMain().getOutputDirectoryName());
     }
+
+    /**
+     * Test of setOutputDirectoryName method, of class ExtractorMain.
+     */
+    public void testSetOutputDirectoryName() {
+        System.out.println("setOutputDirectoryName");
+        assertEquals("target"+File.separator, instance.getOutputDirectoryName());
+        instance.setOutputDirectoryName(null);
+        assertEquals("", instance.getOutputDirectoryName());
+        instance.setOutputDirectoryName("x");
+        assertEquals("x"+File.separator, instance.getOutputDirectoryName());
+        instance.setOutputDirectoryName("x"+File.separator);
+        assertEquals("x"+File.separator, instance.getOutputDirectoryName());
+        
+    }
+    
     
 }
