@@ -84,7 +84,7 @@ IS
   )
   IS
   BEGIN
-    logger.ms('new_event');
+    logger.entering('new_event');
     
     INSERT INTO audit_events_data(
       event_id, event_type_id, 
@@ -114,7 +114,7 @@ IS
   )
   IS
   BEGIN
-    logger.ms('new_change (VARCHAR2)');
+    logger.entering('new_change (VARCHAR2)');
     
     INSERT INTO audit_changes_data(
       event_id, column_name, old_value, new_value)

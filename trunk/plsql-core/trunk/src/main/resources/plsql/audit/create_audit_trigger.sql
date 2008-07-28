@@ -117,9 +117,9 @@ BEGIN
      AND table_name = UPPER(l_table)
    ORDER BY column_name;
   
-  DBMS_OUTPUT.PUT_LINE('Creating trigger ' || l_owner || '.a$' || SUBSTR(l_table, 1, 28));
+  DBMS_OUTPUT.PUT_LINE('Creating trigger ' || l_owner || '.a$' || get_audit_name_id(l_table));
   
-  p('CREATE OR REPLACE TRIGGER ' || l_owner || '.a$' || SUBSTR(l_table, 1, 28));
+  p('CREATE OR REPLACE TRIGGER ' || l_owner || '.a$' || get_audit_name_id(l_table));
   p('AFTER INSERT OR UPDATE OR DELETE ON ' || l_owner || '.' || l_table);
   p('FOR EACH ROW');
   p('DECLARE');
