@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<plsql-core-module  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+   xmlns='http://plsql-core.butterfill.com/schema/plsql-core-module'
+   xsi:schemaLocation='http://plsql-core.butterfill.com/schema/plsql-core-module plsql-core-module.xsd'>
+    <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/resources/plsql/messages/</location>
+    <version>0.1</version>
+    <file-set>
+        <file>build.sql</file>
+        <file>messages.pck</file>
+    </file-set>
+</plsql-core-module>
