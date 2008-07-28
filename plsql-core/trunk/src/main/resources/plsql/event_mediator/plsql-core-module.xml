@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<plsql-core-module  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+   xmlns='http://plsql-core.butterfill.com/schema/plsql-core-module'
+   xsi:schemaLocation='http://plsql-core.butterfill.com/schema/plsql-core-module plsql-core-module.xsd'>
+    <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/resources/plsql/event_mediator/</location>
+    <version>0.1</version>
+    <file-set>
+        <file>build.sql</file>
+        <file>event_mediator.pck</file>
+    </file-set>
+    <dependencies>
+        <dependency>
+            <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/resources/plsql/logger/</location>
+        </dependency>
+    </dependencies>
+</plsql-core-module>
