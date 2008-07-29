@@ -42,6 +42,11 @@ import org.apache.maven.plugin.MojoFailureException;
 public class Extract extends AbstractMojo {
     
     /**
+     * The JAXB un-marshaller - used when reading xml input.
+     */
+    private final Unmarshaller jaxbUnmarshaller;
+    
+    /**
      * The plsql-core includes file which can be null.
      * 
      * @parameter expression="${includesFile}"
@@ -57,10 +62,19 @@ public class Extract extends AbstractMojo {
     private String outputDirectory = "";
     
     /**
-     * The JAXB un-marshaller - used when reading xml input.
+     * Flag to enable/disable execution of this task.
+     * 
+     * @parameter expression="${execute}"
      */
-    private final Unmarshaller jaxbUnmarshaller;
+    private boolean execute = true;
     
+    /**
+     * Flag to enable/disable execution of this task when no network 
+     * connection can be found.
+     * 
+     * @parameter expression="${executeIfNoNetwork}"
+     */
+    private boolean executeIfNoNetwork = false;
     
     /** 
      * Creates a new instance of Extract setting-up the JAXB un-marshaller 
@@ -151,7 +165,7 @@ public class Extract extends AbstractMojo {
      * @return
      *   The name of the module taken from the specified module location.
      */
-    private String getModuleName(String moduleLocation) {
+    private String getModuleName(final String moduleLocation) {
         String[] bits = moduleLocation.split("/");
         return bits[bits.length - 1];
     }
@@ -225,6 +239,29 @@ public class Extract extends AbstractMojo {
      *   If the extract fails.
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
+        
+        if (!execute) {
+            getLog().info("Execution has been disabled. Not extracting");
+            return;
+        }
+        
+        if (!executeIfNoNetwork) {
+            try {
+                URLConnection urlConnection = new URL("http://www.sun.com").openConnection();
+                urlConnection.setUseCaches(false);
+                urlConnection.getInputStream().close();
+                // if we can get the input stream, the network connection is ok
+                getLog().debug("Network OK");
+                
+            } catch (Exception ex) {
+                // assume that any exceptions thrown mean we have no network connection
+                getLog().warn("No Network (failed to connect to http://www.sun.com). Not extracting");
+                return;
+                
+            }
+            
+        }
+        
         try {
             // set-up a map to hold all modules that we'll extract.
             // each module will be keyed by it's location - so we can avoid adding duplicates
@@ -354,6 +391,48 @@ public class Extract extends AbstractMojo {
             
         }
         
+    }
+
+    /**
+     * Returns true if this goal should execute (the default), false otherwise.
+     * @return
+     *   true if this goal should execute.
+     */
+    public boolean isExecute() {
+        return execute;
+    }
+
+    /**
+     * Set to false to disable execution of this goal.
+     * 
+     * @param execute
+     *   Pass false to disable execution of this goal.
+     */
+    public void setExecute(final boolean execute) {
+        this.execute = execute;
+    }
+
+    /**
+     * Returns true if this goal should attempt to execute even when we have
+     * no network connection, false (the default) otherwise.
+     * @return
+     *   true if this goal should attempt to execute even when we have no 
+     *   netowrk connection.
+     */
+    public boolean isExecuteIfNoNetwork() {
+        return executeIfNoNetwork;
+    }
+
+    /**
+     * Set to true to make this goal attempt to execute even when we have
+     * no network connection.
+     * 
+     * @param executeIfNoNetwork
+     *   Pass true to make this goal attempt to execute even when we have
+     *   no network connection.
+     */
+    public void setExecuteIfNoNetwork(final boolean executeIfNoNetwork) {
+        this.executeIfNoNetwork = executeIfNoNetwork;
     }
 
 } // End of class Extract
