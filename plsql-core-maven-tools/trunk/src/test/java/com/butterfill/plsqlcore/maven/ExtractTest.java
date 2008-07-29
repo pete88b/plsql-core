@@ -43,25 +43,32 @@ public class ExtractTest extends TestCase {
         System.out.println("execute");
         Extract instance = new Extract();
         String temp = System.getProperty("java.io.tmpdir");
+        temp += File.separator;
+        temp += "ExtractTest";
         System.out.println("setting output dir to " + temp);
-        instance.setOutputDirectoryName(temp);
-        instance.setIncludesFile(new File("target/test-classes/plsq-core-includes-test.txt"));
+        instance.setOutputDirectory(temp);
+        instance.setIncludesFile(new File("target/test-classes/plsq-core-includes-test.xml"));
+        instance.execute();
+        instance.setIncludesFile(new File("target/test-classes/plsq-core-includes-test-empty.xml"));
         instance.execute();
         instance.setIncludesFile(null);
-        instance.execute();
+        try {
+            instance.execute();
+            fail();
+        } catch (MojoExecutionException ex) {
+        }
         instance.setIncludesFile(new File("does-not-exist"));
         try {
             instance.execute();
             fail();
         } catch (MojoExecutionException ex) {
         }
-        
     }
 
     /**
      * Test of getIncludesFile method, of class Extract.
      */
-    public void testGetIncludesFile() {
+    public void testGetIncludesFile() throws Exception  {
         System.out.println("getIncludesFile");
         Extract instance = new Extract();
         File expResult = null;
@@ -72,7 +79,7 @@ public class ExtractTest extends TestCase {
     /**
      * Test of setIncludesFile method, of class Extract.
      */
-    public void testSetIncludesFile() {
+    public void testSetIncludesFile() throws Exception  {
         System.out.println("setIncludesFile");
         File file = null;
         Extract instance = new Extract();
@@ -80,24 +87,37 @@ public class ExtractTest extends TestCase {
     }
 
     /**
-     * Test of getOutputDirectoryName method, of class Extract.
+     * Test of getOutputDirectory method, of class Extract.
      */
-    public void testGetOutputDirectoryName() {
-        System.out.println("getOutputDirectoryName");
+    public void testGetOutputDirectory() throws Exception {
+        System.out.println("getOutputDirectory");
         Extract instance = new Extract();
-        String expResult = null;
-        String result = instance.getOutputDirectoryName();
-        assertEquals(expResult, result);
+        assertEquals("", instance.getOutputDirectory());
+        
     }
 
     /**
-     * Test of setOutputDirectoryName method, of class Extract.
+     * Test of setOutputDirectory method, of class Extract.
      */
-    public void testSetOutputDirectoryName() {
-        System.out.println("setOutputDirectoryName");
-        String name = "";
+    public void testSetOutputDirectory() throws Exception {
+        System.out.println("setOutputDirectory");
         Extract instance = new Extract();
-        instance.setOutputDirectoryName(name);
+        
+        instance.setOutputDirectory(null);
+        assertEquals("", instance.getOutputDirectory());
+        
+        instance.setOutputDirectory("");
+        assertEquals("", instance.getOutputDirectory());
+        
+        instance.setOutputDirectory("a");
+        assertEquals("a" + File.separator, instance.getOutputDirectory());
+        
+        instance.setOutputDirectory("a/");
+        assertEquals("a/", instance.getOutputDirectory());
+        
+        instance.setOutputDirectory("a" + File.separator);
+        assertEquals("a" + File.separator, instance.getOutputDirectory());
     }
+
 
 }

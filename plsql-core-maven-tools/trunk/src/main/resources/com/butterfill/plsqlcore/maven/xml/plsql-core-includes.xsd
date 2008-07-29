@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="windows-1252"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://plsql-core.butterfill.com/schema/plsql-core-includes"
+            xmlns:tns="http://plsql-core.butterfill.com/schema/plsql-core-includes"
+            elementFormDefault="qualified">
+    <xsd:element name="plsql-core-includes">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="plsql-core-module-location" type="xsd:anyURI" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
