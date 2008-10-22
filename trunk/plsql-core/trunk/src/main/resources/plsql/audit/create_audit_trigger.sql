@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
+/*
+  Creates an audit trigger on the specified table. 
+  i.e. Enables auditing for the specified table.
+  
+  The first argument should be the owner of the table.
+  The second argument should be the name of the table.
+
+  Example of use:
+    SQL> @create_audit_trigger hr countries
+
+  The audit triggers created by this script may also be called a$ triggers
+  as their name always begins with a$.
+*/
+
 DECLARE
   -- The owner of the table. Value got from the first SQL*Plus argument
   l_owner VARCHAR2(32767) := LOWER('&1');
@@ -22,7 +36,7 @@ DECLARE
   
   -- Define an index-by table type to hold text data
   TYPE varchar_table_type IS TABLE OF VARCHAR2(2000)
-  INDEX BY BINARY_INTEGER;
+    INDEX BY BINARY_INTEGER;
   
   -- Holds column names
   l_column_names varchar_table_type;
@@ -30,6 +44,8 @@ DECLARE
   l_data_types varchar_table_type;
   
   -- Holds the SQL used to define/create the trigger
+  l_trigger_sql VARCHAR2(32767);
+  -- Holds other dynamic SQL
   l_sql VARCHAR2(32767);
   
   /*
@@ -42,7 +58,7 @@ DECLARE
   IS
   BEGIN
     RAISE_APPLICATION_ERROR(-20999, message);
-  END;
+  END fail;
   
   /*
     Appends some text to the SQL variable
@@ -52,25 +68,43 @@ DECLARE
   )
   IS
   BEGIN
-    l_sql := l_sql || s || CHR(10);
+    l_trigger_sql := l_trigger_sql || s || CHR(10);
   END p;
   
   /*
-    Returns the audit name ID for the given name
+    Returns the audit name ID for the given name.
+    
+    The SQL statements in this function are dynamic as we have to use the
+    audit names table that belongs to the specified owner.
+    i.e. The table for which we are enabling auditing must be in the same
+    schema as the audit names table from which the audit name ID's came from.
   */
   FUNCTION get_audit_name_id(
     p_name IN VARCHAR2
   )
   RETURN INTEGER
   IS
+    -- Holds dynamic SQL used by this function
+    l_get_audit_name_id_sql VARCHAR2(32767);
+    -- Holds an audit name ID
     l_result INTEGER;
     
   BEGIN
+    l_get_audit_name_id_sql := '
+      SELECT 
+        audit_name_id
+      FROM 
+        ' || l_owner || '.audit_names_data
+      WHERE 
+        audit_name = UPPER(:p_name)';
+    
     -- See if this name already exists
-    SELECT audit_name_id
-      INTO l_result
-      FROM audit_names_data
-     WHERE audit_name = UPPER(p_name);
+    EXECUTE IMMEDIATE 
+      l_get_audit_name_id_sql
+    INTO 
+      l_result
+    USING 
+      p_name;
      
     RETURN l_result;
     
@@ -78,50 +112,62 @@ DECLARE
     WHEN NO_DATA_FOUND
     THEN
       -- if the name doesn't exist yet, create it now
-      INSERT INTO audit_names_data(audit_name)
-      VALUES (UPPER(p_name))
-      RETURNING audit_name_id INTO l_result;
+      l_get_audit_name_id_sql := '
+        INSERT INTO ' || l_owner || '.audit_names_data(
+          audit_name)
+        VALUES (
+          UPPER(:p_name))
+        RETURNING 
+          audit_name_id INTO :l_result';
       
+      EXECUTE IMMEDIATE 
+        l_get_audit_name_id_sql
+      USING 
+        p_name
+      RETURNING INTO 
+        l_result;
+    
       RETURN l_result;
       
-  END;
+  END get_audit_name_id;
   
 BEGIN
   DBMS_OUTPUT.ENABLE(100000);
   
   -- TODO: Check that we can handle all datatypes used by the specified table
   
-  <<check_table_exists>>
-  DECLARE
-    l_count INTEGER;
-    
-  BEGIN
-    SELECT NULL
-      INTO l_count
-      FROM dba_tables
-     WHERE owner = UPPER(l_owner)
-       AND table_name = UPPER(l_table);
-    
-  EXCEPTION
-    WHEN NO_DATA_FOUND
-    THEN
-      fail('table not found ' || l_owner || '.' || l_table);
-      
-  END check_table_exists;
-  
   -- Load column names and their data types into the index-by tables
-  SELECT LOWER(column_name) AS column_name, data_type
-    BULK COLLECT INTO l_column_names, l_data_types
-    FROM dba_tab_columns
-   WHERE owner = UPPER(l_owner)
-     AND table_name = UPPER(l_table)
-   ORDER BY column_name;
+  SELECT 
+    LOWER(column_name) AS column_name, data_type
+  BULK COLLECT INTO 
+    l_column_names, l_data_types
+  FROM 
+    all_tab_columns
+  WHERE 
+    owner = UPPER(l_owner)
+  AND
+    table_name = UPPER(l_table)
+  ORDER BY 
+    column_name;
+   
+  -- Check that the table exists
+  IF (l_column_names.FIRST IS NULL)
+  THEN
+    fail('Table not found ' || l_owner || '.' || l_table || '. (or you may not have access to it)');
+    
+  END IF;
   
   DBMS_OUTPUT.PUT_LINE('Creating trigger ' || l_owner || '.a$' || get_audit_name_id(l_table));
   
   p('CREATE OR REPLACE TRIGGER ' || l_owner || '.a$' || get_audit_name_id(l_table));
   p('AFTER INSERT OR UPDATE OR DELETE ON ' || l_owner || '.' || l_table);
   p('FOR EACH ROW');
+  p('/*');
+  p('Created by create_audit_trigger.sql. Automated drop tag.');
+  p('');
+  p('Do not change the comment above (line 5) unless you want to stop this');
+  p('trigger from being dropped programatically. See drop_audit_triggers.sql');
+  p('*/');
   p('DECLARE');
   p('  l_event_id INTEGER;');
   p('');
@@ -163,9 +209,9 @@ BEGIN
   p('');
   FOR i IN l_column_names.FIRST .. l_column_names.LAST
   LOOP
-    p('    IF (NOT(:OLD.' || l_column_names(i) || ' = :NEW.' || l_column_names(i) ||
-               ' OR (:OLD.' || l_column_names(i) || ' IS NULL AND :NEW.' || 
-               l_column_names(i) || ' IS NULL)))');
+    p('    IF (:OLD.' || l_column_names(i) || ' != :NEW.' || l_column_names(i) || ' OR');
+    p('        :OLD.' || l_column_names(i) || ' IS NULL AND :NEW.' || l_column_names(i) || ' IS NOT NULL OR');
+    p('        :OLD.' || l_column_names(i) || ' IS NOT NULL AND :NEW.' || l_column_names(i) || ' IS NULL)');
     p('    THEN');
     
     IF (l_data_types(i) = 'DATE')
@@ -195,7 +241,7 @@ BEGIN
   p('END;');
   
   -- create the trigger
-  EXECUTE IMMEDIATE l_sql;
+  EXECUTE IMMEDIATE l_trigger_sql;
   
 END;
 /

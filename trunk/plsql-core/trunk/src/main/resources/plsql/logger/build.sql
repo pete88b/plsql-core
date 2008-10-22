@@ -16,9 +16,6 @@
 
 /*
   Build script for logger.
-
-  No dependencies.
-
 */
 
 PROMPT ___ Start of logger build.sql ___

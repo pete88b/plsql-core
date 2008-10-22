@@ -1,0 +1,155 @@
+<!-- 
+    Document   : index
+    Created on : 22-Oct-2008, 15:15:35
+    Author     : Butterp
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>plsql-core: logger</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    </head>
+    <body>
+        <h1>plsql-core: logger</h1>
+        
+        <h2>Overview</h2>
+        
+        <p>
+            The logger module provides logging facilities.
+        </p>
+        
+        <p>
+            The primary target use of this specification is to identify and 
+            resolve run-time problems caused by PL/SQL code.
+        </p>
+        
+        
+        <p>
+            When writing PL/SQL code, developers need to consider two situatons;
+            <ul>
+                <li>
+                    Problems occur in the production environment.
+                    <p>
+                        PL/SQL code must log enough information for support 
+                        staff to be able to identify the problem without 
+                        re-creating the problem.
+                        i.e. First pass diagnostics.
+                    </p>
+                    <p>
+                        It is expected that the error procedure will be used to
+                        log this information. 
+                        It is also expected that the info and warn procedures 
+                        will be used to help first pass diagnostics but data 
+                        logged at these levels is not guaranteed to be saved.
+                    </p>
+                </li>
+                <li>
+                    Problems occur in the development environment.
+                    <p>
+                        PL/SQL code must log detailed information about what the 
+                        code is doing so that developers can follow code execution.
+                    </p>
+                    <p>
+                        The following gives examples of the kind of information
+                        that will be logged for this purpose;
+                        <ul>
+                            <li>The start and end of a PL/SQL module,</li>
+                            <li>The values of actual parameters passed to PL/SQL modules,</li>
+                            <li>The route taken by code branches (IF / SWITCH / etc) ...</li>
+                        </ul>
+                        It is expected that the fb, fb1 ... fb5, entering and 
+                        exiting procedures will be used to log this information.
+                    </p>
+                </li>
+            </ul>
+      
+        </p>
+    
+    
+        <p>
+            All data logged has an associated log level. 
+            The log level determines how the logging call is dispatched.
+            <ul>
+                <li>
+                    If the log level is greater than or equal to 
+                    <code>g_error_level</code>, <code>logger_error.log</code> 
+                    is called.
+                    This is true regardless of the feedback level.
+                </li>
+                <li>
+                    Otherwise, if the log level is greater than or equal to the 
+                    value returned by <code>get_feedback_level</code>, 
+                    <code>logger_feedback.log</code> is called.
+                    i.e. All feedback could be suppressed by setting the 
+                    feedback level to 6000.
+                </li>
+            </ul>
+      
+        </p>
+        
+        
+        <p>
+            To tell the logger who is logging information, call 
+            <code>logger_utils.set_user</code>.
+            <br/>
+            The user will default to the value returned by the Oracle built-in
+            function USER.
+            <br/>
+            You will probably need to tell the logger who is logging information
+            if your application uses connection pooling (where every connection
+            made to the database is for the same user).
+        </p>
+        
+        <p>
+            Every call to any of the logging procedures (e.g. log, fb ... fb5,
+            error) will cause <code>logger_utils.pre_log_process</code> to be 
+            called before the logging call is dispatched.
+        </p>
+        
+        <p>
+            This implementaion of <code>logger_utils</code> uses the table 
+            <code>logger_flags</code> to control the feedback level at run time.
+            <br/>
+            This table is checked, once a minute at most, when 
+            <code>pre_log_process</code> is called.
+            <br/>
+            The <code>logger_flags</code> table holds a username and a log level. 
+            <ul>
+                <li>
+                    If the username in <code>logger_flags</code> is the same as the username
+                    returned by <code>logger_utils.get_user</code>, the feedback level is 
+                    set.
+                </li>
+                <li>
+                    Otherwise, if the username in <code>logger_flags</code> is 
+                    <code>'PUBLIC'</code>, the feedback level is set.
+                </li>
+                <li>
+                    Otherwise, no change is made.
+                </li>
+            </ul>
+        </p>
+        
+        
+        <p>
+            The implementations of <code>logger_error</code> and <code>logger_feedback</code> determine 
+            how data is logged.
+            <br/>
+            As a real example, the logger_pipe module defines package bodies for 
+            <code>logger_error</code> and <code>logger_feedback</code> that can be "plugged in" to 
+            change how data is logged.
+        </p>
+        
+        
+        <p>
+            This implementation uses autonomous transactions to save data in the
+            <code>logger_error_data</code> and <code>logger_feedback_data</code> 
+            tables.
+            Logged data can be read from the the <code>logger_error_data</code>
+            and <code>logger_feedback_data</code> tables directly or from the 
+            <code>logger_data_recent</code> and <code>logger_data_all views</code>.
+        </p>
+        
+        
+    </body>
+</html>

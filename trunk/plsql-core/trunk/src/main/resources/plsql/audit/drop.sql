@@ -15,10 +15,10 @@
  */
 
 /*
-  Build script for event mediator.
+  Drop script for audit.
 */
 
-PROMPT ___ Start of event mediator build.sql ___
+PROMPT ___ Start of audit drop.sql ___
 
 DECLARE
   PROCEDURE p(
@@ -49,25 +49,21 @@ DECLARE
   END drop_object;
 
 BEGIN
-  IF (UPPER('&&drop_existing.') = 'YES' OR
-      UPPER('&&drop_existing.') = 'Y')
-  THEN
-    drop_object('TABLE event_mediator_data');
+  p('-');
+  p('******************************');
+  p('Note: Not dropping a$ triggers');
+  p('******************************');
+  p('-');
+  drop_object('PACKAGE auditer');
+  drop_object('VIEW audit_view');
+  drop_object('TABLE audit_changes_data');
+  drop_object('SEQUENCE audit_event_id');
+  drop_object('TABLE audit_events_data');
+  drop_object('SEQUENCE audit_name_id');
+  drop_object('TABLE audit_names_data');
+  drop_object('TABLE audit_reason_data');
 
-  END IF;
 END;
 /
 
-
-PROMPT Creating table event_mediator_data
-
-CREATE TABLE event_mediator_data(
-  event_name VARCHAR2(1000),
-  observer VARCHAR2(1000),
-  CONSTRAINT event_mediator_data_pk PRIMARY KEY (event_name, observer)
-);
-
-PROMPT Creating event mediator package
-@@event_mediator.pck
-
-PROMPT ___ End of event mediator build.sql ___
+PROMPT ___ End of audit drop.sql ___
