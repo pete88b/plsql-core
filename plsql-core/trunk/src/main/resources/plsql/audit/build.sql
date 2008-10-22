@@ -16,8 +16,6 @@
 
 /*
   Build script for audit.
-
-  Depends on: logger.
 */
 
 PROMPT ___ Start of audit build.sql ___
@@ -65,11 +63,41 @@ BEGIN
     drop_object('TABLE audit_events_data');
     drop_object('SEQUENCE audit_name_id');
     drop_object('TABLE audit_names_data');
+    drop_object('TABLE audit_reason_data');
 
   END IF;
 
 END;
 /
+
+-- Set-up some varaibales to hold the database version
+VARIABLE db_version VARCHAR2(2000);
+VARIABLE db_compatibility VARCHAR2(2000);
+
+-- Get the database version
+BEGIN
+  DBMS_UTILITY.DB_VERSION(:db_version, :db_compatibility);
+  
+  DBMS_OUTPUT.PUT_LINE('Found database version: ' || :db_version || CHR(10));
+
+END;
+/
+
+-- get the max varchar2 column length based on the database version
+-- use 4000 for 10g + 2000 for pre-10g
+COLUMN max_varchar_col_length NEW_VALUE max_varchar_col_length NOPRINT
+SELECT DECODE(SUBSTR(LTRIM(:db_version), 2, 1),
+              '.', '2000',
+              '4000') AS max_varchar_col_length
+  FROM DUAL;
+
+
+PROMPT Creating table audit_reason_data
+
+CREATE GLOBAL TEMPORARY TABLE audit_reason_data(
+  reason VARCHAR2(&max_varchar_col_length.)
+)
+ON COMMIT DELETE ROWS;
 
 
 PROMPT Creating table audit_names_data
@@ -115,7 +143,9 @@ CREATE TABLE audit_events_data(
   event_date DATE NOT NULL,
   table_owner CONSTRAINT fk_audit_events_data_tab_owner REFERENCES audit_names_data(audit_name_id),
   table_name CONSTRAINT fk_audit_events_data_tab_name REFERENCES audit_names_data(audit_name_id),
-  row_id ROWID NOT NULL,
+  row_id VARCHAR2(&max_varchar_col_length.) NOT NULL,
+  reason VARCHAR2(&max_varchar_col_length.),
+  transaction_id VARCHAR2(&max_varchar_col_length.),
   CONSTRAINT pk_audit_events_data PRIMARY KEY (event_id)  
 );
 
@@ -130,28 +160,6 @@ CREATE SEQUENCE audit_event_id
   CACHE 10
   CYCLE
   ORDER;
-  
-
--- Set-up some varaibales to hold the database version
-VARIABLE db_version VARCHAR2(2000);
-VARIABLE db_compatibility VARCHAR2(2000);
-
--- Get the database version
-BEGIN
-  DBMS_UTILITY.DB_VERSION(:db_version, :db_compatibility);
-  
-  DBMS_OUTPUT.PUT_LINE('Found database version: ' || :db_version || CHR(10));
-
-END;
-/
-
--- get the max varchar2 column length based on the database version
--- use 4000 for 10g + 2000 for pre-10g
-COLUMN max_varchar_col_length NEW_VALUE max_varchar_col_length NOPRINT
-SELECT DECODE(SUBSTR(LTRIM(:db_version), 2, 1),
-              '.', '2000',
-              '4000') AS max_varchar_col_length
-  FROM DUAL;
 
 
 PROMPT Creating table audit_changes_data
@@ -188,7 +196,9 @@ SELECT e.event_id,
           FROM audit_names_data 
          WHERE audit_name_id = c.column_name) AS column_name,
        c.old_value,
-       c.new_value
+       c.new_value,
+       e.reason,
+       e.transaction_id
   FROM audit_events_data e,
        audit_changes_data c
  WHERE e.event_id = c.event_id(+)

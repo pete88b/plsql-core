@@ -29,7 +29,7 @@ IS
       Problems occur in the production environment.
         PL/SQL code must log enough information for support staff to be 
         able to identify the problem without re-creating the problem.
-        i.e. Fist pass diagnostics.
+        i.e. First pass diagnostics.
         
         It is expected that the error procedure will be used to log this 
         information. 

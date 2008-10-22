@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+/*
+  Build script for constants.
+*/
+
 PROMPT ___ Start of constants build.sql ___
 
 PROMPT Creating constants specification

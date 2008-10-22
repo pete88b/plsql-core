@@ -2,12 +2,19 @@
 <plsql-core-module  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
    xmlns='http://plsql-core.butterfill.com/schema/plsql-core-module'
    xsi:schemaLocation='http://plsql-core.butterfill.com/schema/plsql-core-module plsql-core-module.xsd'>
-    <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/resources/plsql/constants/</location>
+    <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/resources/plsql/audit/</location>
     <version>0.1</version>
     <file-set>
         <file>build.sql</file>
         <file>drop.sql</file>
         <file>index.html</file>
-        <file>constants.spc</file>
+        <file>auditer.pck</file>
+        <file>create_audit_trigger.sql</file>
+        <file>drop_audit_triggers.sql</file>
     </file-set>
+    <dependencies>
+        <dependency>
+            <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/resources/plsql/logger/</location>
+        </dependency>
+    </dependencies>
 </plsql-core-module>

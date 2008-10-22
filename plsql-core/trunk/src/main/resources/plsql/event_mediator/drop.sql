@@ -15,10 +15,10 @@
  */
 
 /*
-  Build script for event mediator.
+  Drop script for event mediator.
 */
 
-PROMPT ___ Start of event mediator build.sql ___
+PROMPT ___ Start of event mediator drop.sql ___
 
 DECLARE
   PROCEDURE p(
@@ -49,25 +49,10 @@ DECLARE
   END drop_object;
 
 BEGIN
-  IF (UPPER('&&drop_existing.') = 'YES' OR
-      UPPER('&&drop_existing.') = 'Y')
-  THEN
-    drop_object('TABLE event_mediator_data');
+  drop_object('PACKAGE event_mediator');
+  drop_object('TABLE event_mediator_data');
 
-  END IF;
 END;
 /
 
-
-PROMPT Creating table event_mediator_data
-
-CREATE TABLE event_mediator_data(
-  event_name VARCHAR2(1000),
-  observer VARCHAR2(1000),
-  CONSTRAINT event_mediator_data_pk PRIMARY KEY (event_name, observer)
-);
-
-PROMPT Creating event mediator package
-@@event_mediator.pck
-
-PROMPT ___ End of event mediator build.sql ___
+PROMPT ___ End of event mediator drop.sql ___
