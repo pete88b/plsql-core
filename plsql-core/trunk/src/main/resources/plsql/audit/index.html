@@ -92,5 +92,26 @@
             problem.
         </p>
         
+        <h2>Notes</h2>
+        
+        The audit_events_data table saves ROWID's in a column of VARCHAR2
+        datatype (rather than a column of ROWID datatype).
+        <br/>
+        The following trigger fails to compile with PLS-00382: 
+        expression is of wrong type:
+        <pre>
+            CREATE OR REPLACE TRIGGER hr.demo
+              AFTER INSERT ON hr.countries  
+              FOR EACH ROW
+            DECLARE
+              l_row_id ROWID;
+            BEGIN
+              l_row_id := :NEW.ROWID;
+            END;
+        </pre>
+        This will compile after changing 
+        <code>l_row_id ROWID</code> to 
+        <code>l_row_id VARCHAR2(2000)</code>.
+        
     </body>
 </html>
