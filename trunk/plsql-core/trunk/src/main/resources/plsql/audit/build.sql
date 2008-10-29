@@ -136,6 +136,18 @@ END;
 
 PROMPT Creating table audit_events_data
 
+/*
+  We save the ROWID in a VARCHAR2 field as some times triggers failed to compile
+  when using the ROWID datatype. 
+  The following would not compile when part of a trigger on hr.countries:
+    ...
+    IS
+      l_row_id ROWID;
+    BEGIN
+      l_row_id := :NEW.ROWID;
+    ...
+  Changing l_row_id ROWID to l_row_id VARCHAR2(2000) worked.
+*/
 CREATE TABLE audit_events_data(
   event_id INTEGER,
   event_type_id INTEGER NOT NULL,
