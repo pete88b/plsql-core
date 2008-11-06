@@ -1,0 +1,134 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>plsql-core: exceptions</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    </head>
+    <body>
+        <h1>plsql-core: exceptions</h1>
+        
+        <h2>Overview</h2>
+        
+        <p>
+            The exceptions module defines exceptions to help when catching 
+            exceptions and provides procedures to help when raising exceptions.
+        </p>
+        
+        <h2>How To</h2>
+        
+        <h3>Use the exceptions package to catch an exception</h3>
+        
+        In the following example we try to drop a table 
+        <code>no_body.drop_me</code>.
+        <br/>
+        If the table exists, it will be dropped and a message will be output.
+        <br/>
+        If the table does not exist, a message indicating the table was not 
+        found will be output. 
+        In this case we do not want the exception to propogate.
+        
+        <pre>
+            BEGIN
+              EXECUTE IMMEDIATE 'DROP TABLE no_body.drop_me';
+              DBMS_OUTPUT.PUT_LINE('dropped table no_body.drop_me');
+
+            EXCEPTION
+              WHEN exceptions.table_or_view_not_found
+              THEN
+                DBMS_OUTPUT.PUT_LINE('table no_body.drop_me not found');
+
+            END;</pre>
+        
+        
+        <h3>Use the exceptions package to raise an exception</h3>
+        
+        In the following example, we raise an exception as the contrived test 
+        condition fails.
+        <br/>
+        When we call <code>exceptions.throw_error</code>:
+        <ul>
+            <li>
+                The current transaction is rolled back. 
+                i.e Any work done in the "do some work" section will be rolled
+                back.
+            </li>
+            <li>
+                Details of the exception that we are about to raise are logged.
+            </li>
+            <li>
+                The exception is raised.
+            </li>
+        </ul>
+        
+        <pre>
+            DECLARE
+              l_test_value INTEGER := 0;
+
+            BEGIN
+              -- do some work
+
+              -- pretend that a test condition failed
+              IF (l_test_value != 3)
+              THEN
+                exceptions.throw_error(
+                  'expected test value=3. actual test value=' || l_test_value);
+
+              END IF;
+
+            END;</pre>
+
+        Running the above example in SQL*Plus should give the following output:
+        <pre>
+            ERROR at line 1:
+            ORA-20999: expected test value=3. actual test value=0
+            ORA-06512: at "PETER.EXCEPTIONS", line 73
+            ORA-06512: at "PETER.EXCEPTIONS", line 96
+            ORA-06512: at line 10</pre>
+        
+        And the following information should be logged (see logger_data_all):
+        <br/><br/>
+        <code>anonymous block (10) Raising -20999: expected test value 3. 
+        actual test value=0</code>
+        
+        
+        <h3>Use the exceptions package to assert a value is not null</h3>
+        
+        In the example below, an exception will be raised if the demo
+        procedure is passed a NULL value.
+        
+        <pre>
+            DECLARE
+              l_value INTEGER := NULL;
+
+              PROCEDURE demo(
+                p_data IN INTEGER
+              )
+              IS
+              BEGIN
+                exceptions.throw_if_null(p_data, 'p_data');
+
+                DBMS_OUTPUT.PUT_LINE('p_data=' || p_data);
+
+              END;
+
+            BEGIN
+              demo(l_value);
+
+            END;</pre>
+        
+        Running the above example in SQL*Plus should give the following output:
+        <pre>
+            ERROR at line 1:
+            ORA-20001: p_data cannot be null
+            ORA-06512: at "PETER.EXCEPTIONS", line 73
+            ORA-06512: at "PETER.EXCEPTIONS", line 124
+            ORA-06512: at line 9
+            ORA-06512: at line 16</pre>
+        
+        The above example will output <code>p_data=3</code> if 
+        <code>l_value INTEGER := NULL</code> is changed to
+        <code>l_value INTEGER := 3</code>.
+        
+    </body>
+</html>
