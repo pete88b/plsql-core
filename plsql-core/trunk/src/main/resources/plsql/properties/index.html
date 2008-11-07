@@ -1,0 +1,91 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>plsql-core: properties</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    </head>
+    <body>
+        <h1>plsql-core: properties</h1>
+        
+        <h2>Overview</h2>
+        
+        <p>
+            The properties module provides facilities for managing and 
+            retrieving properties.
+        </p>
+        
+        <p>
+            Use the <code>property_manager</code> package to programatically
+            manage and retrieve properties.
+            <br/>
+            None of the modules in the <code>property_manager</code> package 
+            affect the transaction from which they are called.
+        </p>
+        
+        <p>
+            Properties are organised into property groups. 
+            Property groups are saved in the <code>property_group_data</code> table.
+            <br/>
+            Property groups can have any number of keys. 
+            Keys are saved in the <code>property_key_data</code> table.
+            <br/>
+            There are two main types of key:
+            <ul>
+                <li>
+                    Keys that allow no more than one value.
+                    Known as single value keys.
+                </li>
+                <li>
+                    Keys that allow any number of values.
+                    Known as multiple value keys.
+                </li>
+            </ul>
+            Values are saved in the <code>property_value_data</code> table.
+        </p>
+        
+        <p>
+            A property is identified by it's group and key.
+            <br/>
+            Property values are identified by <code>value_id</code>.
+        </p>
+        
+        <p>
+            A property is said to not exist if:
+            <ul>
+                <li>
+                    It's property group does not exist or
+                </li>
+                <li>
+                    It's key does not exist (within it's group).
+                </li>
+            </ul>
+    
+            A property is said to have no value if:
+            <ul>
+                <li>
+                    It's property group does not exist,
+                </li>
+                <li>
+                    It's key does not exist (within it's group) or
+                </li>
+                <li>
+                    It has no value. 
+                    i.e. no row in the <code>property_value_data</code> table.
+                </li>
+            </ul>
+    
+            Property group names, keys and values are all case sensitive. 
+            <br/>
+            NULL cannot be used as a group name or key.
+            <br/>
+            Property group names and keys cannot contain the pound sign #.
+            The pound sign is used to separate group names and keys when 
+            referring to a property. e.g. <code>demoGroup#keyOne</code> refers 
+            to the key called "keyOne" that belongs to the group "demoGroup".
+            <br/>
+            NULL is a valid value.
+        </p>
+        
+    </body>
+</html>
