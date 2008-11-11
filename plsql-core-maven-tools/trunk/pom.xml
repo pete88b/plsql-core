@@ -34,11 +34,6 @@
             <version>2.0.9</version>
         </dependency>
         <dependency>
-            <groupId>com.butterfill.plsqlcore</groupId>
-            <artifactId>plsql-core</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>3.8.2</version>
