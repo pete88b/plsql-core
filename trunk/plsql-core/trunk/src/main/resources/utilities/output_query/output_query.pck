@@ -30,7 +30,7 @@ IS
   one_space VARCHAR2(1) := CHR(32); 
 
   /*
-    The default output procedure.
+    An output procedure for use on pre-10g databases.
     This calls DBMS_OUTPUT.PUT_LINE passing no more than 255 characters.
   */
   PROCEDURE put_line_pre_10g (
@@ -44,7 +44,8 @@ IS
     p_sql 
       Must be a select statment.
     p_output_procedure 
-      Any procedure that takes a single varchar argument.
+      The procedure called to output a line of data.
+      This can be any procedure that takes a single varchar argument.
     p_col_lengths
       A comma separated list of column lengths. 
     p_default_col_length 
@@ -54,7 +55,7 @@ IS
   */
   PROCEDURE to_output (
     p_sql IN VARCHAR2,
-    p_output_procedure IN VARCHAR2 := 'output_query.put_line_pre_10g',
+    p_output_procedure IN VARCHAR2 := 'DBMS_OUTPUT.PUT_LINE',
     p_col_lengths IN VARCHAR2 := NULL,
     p_default_col_length IN INTEGER := 20,
     p_col_seperator IN VARCHAR2 := one_space
@@ -169,7 +170,7 @@ IS
   */
   PROCEDURE to_output (
     p_sql IN VARCHAR2,
-    p_output_procedure IN VARCHAR2,
+    p_output_procedure IN VARCHAR2 := 'DBMS_OUTPUT.PUT_LINE',
     p_col_lengths IN VARCHAR2 := NULL,
     p_default_col_length IN INTEGER := 20,
     p_col_seperator IN VARCHAR2 := one_space
@@ -280,11 +281,25 @@ IS
     
   BEGIN
     DBMS_OUTPUT.ENABLE(1000000);
+    
     -- Accept only SELECT statements
-    IF (INSTR(UPPER(LTRIM(p_sql)), 'SELECT') <> 1)
-    THEN
-      RAISE_APPLICATION_ERROR(-20001, '"SELECT" statements only');
-    END IF;
+    <<check_statement>>
+    DECLARE
+      l_sql VARCHAR2(32767);
+      
+    BEGIN
+      l_sql := UPPER(p_sql);
+      l_sql := REPLACE(l_sql, line_feed, NULL);
+      l_sql := REPLACE(l_sql, form_feed, NULL);
+      l_sql := REPLACE(l_sql, cariage_return, NULL);
+      l_sql := LTRIM(l_sql);
+      
+      IF (INSTR(l_sql, 'SELECT') <> 1)
+      THEN
+        RAISE_APPLICATION_ERROR(-20001, '"SELECT" statements only');
+      END IF;
+      
+    END check_statement;
     
     -- Set the column widths
     set_tokens(p_col_lengths, ',');
