@@ -21,7 +21,7 @@
   creates it) as may be used by other modules.
 */
 
-PROMPT ___ Start of messages drop.sql ___
+PROMPT ___ Start of properties drop.sql ___
 
 DECLARE
   PROCEDURE p(
