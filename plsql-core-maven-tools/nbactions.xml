@@ -22,4 +22,11 @@
                 <maven.test.skip>true</maven.test.skip>
             </properties>
         </action>
+        <action>
+            <actionName>CUSTOM-generate-sources</actionName>
+            <displayName>generate-sources</displayName>
+            <goals>
+                <goal>generate-sources</goal>
+            </goals>
+        </action>
     </actions>
