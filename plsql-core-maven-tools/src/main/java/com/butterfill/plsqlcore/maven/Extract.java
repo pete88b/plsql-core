@@ -159,7 +159,7 @@ public class Extract extends AbstractMojo {
      * <br/>
      * e.g.
      * constants is the module name for the location
-     * http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/resources/plsql/constants/
+     * http://plsql-core.googlecode.com/svn/trunk/plsql-core/src/main/sql/constants/
      * @param moduleLocation
      *   The module location.
      * @return
@@ -289,7 +289,7 @@ public class Extract extends AbstractMojo {
                     throw new MojoExecutionException(
                             "[Location Mismatch] " + 
                             includesFile.getName() + ":\"" + entry.getKey() + 
-                            " \"plsql-core-module.xml:\"" + location + "\"");
+                            "\" plsql-core-module.xml:\"" + location + "\"");
                 }
                 
                 // get the name of the module
