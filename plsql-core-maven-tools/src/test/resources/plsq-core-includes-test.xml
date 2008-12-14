@@ -4,7 +4,7 @@
    xsi:schemaLocation='http://plsql-core.butterfill.com/schema/plsql-core-includes plsql-core-includes.xsd'>
     
     <plsql-core-module-location>
-        http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/resources/plsql/event_mediator
+        http://plsql-core.googlecode.com/svn/trunk/plsql-core/src/main/sql/event_mediator
     </plsql-core-module-location>
     
 </plsql-core-includes>
