@@ -2,7 +2,7 @@
 <plsql-core-module  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
    xmlns='http://plsql-core.butterfill.com/schema/plsql-core-module'
    xsi:schemaLocation='http://plsql-core.butterfill.com/schema/plsql-core-module plsql-core-module.xsd'>
-    <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/sql/event_mediator/</location>
+    <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/src/sql/event_mediator/</location>
     <version>0.1</version>
     <file-set>
         <file>build.sql</file>
@@ -12,7 +12,7 @@
     </file-set>
     <dependencies>
         <dependency>
-            <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/trunk/src/main/sql/logger/</location>
+            <location>http://plsql-core.googlecode.com/svn/trunk/plsql-core/src/main/sql/logger/</location>
         </dependency>
     </dependencies>
 </plsql-core-module>
