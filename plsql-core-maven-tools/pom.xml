@@ -43,6 +43,12 @@
     <build>
         <plugins>
             <!--JAXB-->
+            <!--
+              JAXB generated files manually copied to src as this now fails with:
+
+              The plugin 'com.sun.tools.xjc.maven2:maven-jaxb-plugin' does not exist or
+              no valid version could be found
+              
             <plugin>
                 <groupId>com.sun.tools.xjc.maven2</groupId>
                 <artifactId>maven-jaxb-plugin</artifactId>
@@ -57,10 +63,11 @@
                     <generatePackage>com.butterfill.plsqlcore.maven.xml</generatePackage>
                     <verbose>true</verbose>
                     <schemaDirectory>src/main/resources/com/butterfill/plsqlcore/maven/xml</schemaDirectory>
-                    <!--build fails if we generate package-info.java-->
+                    <!$$build fails if we generate package-info.java$$>
                     <args>-npa</args>
                 </configuration>
             </plugin>
+            -->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
