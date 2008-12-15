@@ -37,6 +37,7 @@ import java.util.zip.ZipInputStream;
  * 
  * @author peter
  */
+@Deprecated
 public class ExtractorMain {
 
     /**
