@@ -16,11 +16,6 @@
 
 /*
   Build script for permissions.
-
-  Depends on: logger.
-  Depends on: exceptions.
-  Depends on: messages.
-  Depends on: properties.
 */
 
 PROMPT ___ Start of permissions build.sql ___
@@ -58,53 +53,68 @@ BEGIN
   IF (UPPER('&&drop_existing.') = 'YES' OR
       UPPER('&&drop_existing.') = 'Y')
   THEN
-    drop_object('TABLE permission_sets_data');
-    drop_object('TABLE permissions_data');
+    drop_object('TABLE permission_set_data');
+    drop_object('TABLE permission_data');
+    drop_object('SEQUENCE permission_id_sequence');
 
   END IF;
-
-  BEGIN
-    properties.create_property_group(
-      'permission',
-      constants.yes,
-      'Properties that are used by the permission package');
-
-    properties.set_property(
-      'permission',
-      'case_of_permission',
-      'upper',
-      'Controls how permissions are saved and compared');
-
-    
-  EXCEPTION
-    WHEN OTHERS
-    THEN
-      p('Failed to create property group "permission". This could be because the group already existed.');
-
-  END;
 
 END;
 /
 
 
-PROMPT Creating table permissions_data
+PROMPT Creating table permission_data
 
-CREATE TABLE permissions_data(
-  permission VARCHAR2(100),
-  description VARCHAR2(2000),
-  status INTEGER NOT NULL,
-  CONSTRAINT permissions_pk PRIMARY KEY(permission),
-  CONSTRAINT valid_status CHECK (status IN (0, 1, 2, 3, 4))
+CREATE TABLE permission_data(
+  permission_id INTEGER,
+  permission_name VARCHAR2(1024) NOT NULL,
+  permission_description VARCHAR2(2000),
+  CONSTRAINT permission_data_pk PRIMARY KEY(permission_id),
+  CONSTRAINT permission_name_unique UNIQUE(permission_name)
 );
 
-PROMPT Creating table permission_sets
+PROMPT Creating sequence permission_id_sequence
 
-CREATE TABLE permission_sets_data(
-  permission REFERENCES permissions_data(permission),
-  permission_allowed REFERENCES permissions_data(permission),
-  CONSTRAINT permission_sets_pk PRIMARY KEY (permission, permission_allowed),
-  CONSTRAINT set_cant_allow_self CHECK (permission != permission_allowed)
+CREATE SEQUENCE permission_id_sequence
+  MINVALUE 0
+  MAXVALUE 99999999999999999999999999
+  START WITH 0
+  INCREMENT BY 1
+  CACHE 10
+  CYCLE
+  ORDER;
+
+PROMPT Creating trigger bi_fer_permission
+
+CREATE OR REPLACE TRIGGER bi_fer_permission
+BEFORE INSERT ON permission_data
+FOR EACH ROW
+BEGIN
+  SELECT permission_id_sequence.NEXTVAL
+    INTO :NEW.permission_id
+    FROM DUAL;
+END;
+/
+
+PROMPT Creating table permission_set_data
+
+CREATE TABLE permission_set_data(
+  permission_id 
+    NOT NULL
+    CONSTRAINT permission_must_exists
+      REFERENCES permission_data(permission_id)
+      ON DELETE CASCADE,
+  permission_allowed_id
+    NOT NULL
+    CONSTRAINT permission_allowed_must_exists
+      REFERENCES permission_data(permission_id)
+      ON DELETE CASCADE,
+  CONSTRAINT permission_set_data_pk 
+    PRIMARY KEY (permission_id, permission_allowed_id),
+  CONSTRAINT permission_set_cant_allow_self
+    CHECK (permission_id != permission_allowed_id)
 );
+
 
 PROMPT Creating permission package specification
 @@permission.spc
@@ -117,5 +127,6 @@ PROMPT Creating permission package body
 
 PROMPT Creating permissions package body
 @@permissions.bdy
-  
+
+
 PROMPT ___ End of permissions build.sql ___
