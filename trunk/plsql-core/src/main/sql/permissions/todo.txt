@@ -1,7 +1,0 @@
-error handling
-
-check use of permission_denied in permission.spc
-
-add grantable flag to permissions
-
-why do we need two part id on a permission? So we know which one is being revoked
