@@ -413,6 +413,38 @@ IS
     COMMIT;
     
   END deny;
-  
+
+
+  /*
+    Returns the description of the specified permission.
+  */
+  FUNCTION get_permission_description(
+    p_permission_name IN VARCHAR2
+  )
+  RETURN VARCHAR2
+  IS
+    l_result VARCHAR2(32767);
+
+  BEGIN
+    logger.entering('get_permission_description');
+
+    logger.fb(
+      'p_permission_name=' || p_permission_name);
+
+    SELECT permission_data.permission_description
+      INTO l_result
+      FROM permission_data
+     WHERE permission_data.permission_name = p_permission_name;
+
+    RETURN l_result;
+
+  EXCEPTION
+    WHEN NO_DATA_FOUND
+    THEN
+      RETURN p_permission_name || ' (unknown permission)';
+
+  END get_permission_description;
+
+
 END permission;
 /

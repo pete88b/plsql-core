@@ -195,6 +195,22 @@ IS
   PROCEDURE deny(
     p_permission_id IN INTEGER,
     p_permission_denied_id IN INTEGER);
-  
+
+
+  /*
+    Returns the description of the specified permission.
+
+    Parameters:
+      p_permission_name
+        A permission name.
+        If this is not a valid name, this function will return
+        p_permission_name with ' (unknown permission)' appended.
+  */
+  FUNCTION get_permission_description(
+    p_permission_name IN VARCHAR2
+  )
+  RETURN VARCHAR2;
+
+
 END permission;
 /
