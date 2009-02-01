@@ -19,18 +19,23 @@ IS
   /*opb-package
     field
       name=log_level
-      datatype=NUMBER;
+      datatype=NUMBER
+      in_load=ignored;
 
     field
       name=log_user
-      datatype=VARCHAR2;
+      datatype=VARCHAR2
+      in_load=ignored;
     
     field
       name=last_n_minutes
-      datatype=NUMBER;
+      datatype=NUMBER
+      in_load=ignored;
       
     field
-      name=date_format;
+      name=date_format
+      in_load=ignored;
+
   */
 
   /*
