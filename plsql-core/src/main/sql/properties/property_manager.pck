@@ -434,6 +434,11 @@ IS
       p_key
         This must be a key that belongs to the specified group.
   */
+  /*opb
+    param
+      name=RETURN
+      use_scalar_result_cache=Y;
+  */
   FUNCTION get_value(
     p_group_name IN VARCHAR2,
     p_key IN VARCHAR2
@@ -459,6 +464,11 @@ IS
       p_default
         The value to return if the specified property can not be found.
   */
+  /*opb
+    param
+      name=RETURN
+      use_scalar_result_cache=Y;
+  */
   FUNCTION get_value(
     p_group_name IN VARCHAR2,
     p_key IN VARCHAR2,
@@ -483,6 +493,11 @@ IS
         
       p_key
         One of these should be a key that belongs to the specified group.
+  */
+  /*opb
+    param
+      name=RETURN
+      use_scalar_result_cache=Y;
   */
   FUNCTION get_value(
     p_group_name IN VARCHAR2,
@@ -511,6 +526,11 @@ IS
         The value to return if none of the specified properties 
         can not be found.
   */
+  /*opb
+    param
+      name=RETURN
+      use_scalar_result_cache=Y;
+  */
   FUNCTION get_value(
     p_group_name IN VARCHAR2,
     p_keys IN varchar_table,
@@ -532,6 +552,11 @@ IS
         
       p_key
         This must be a key that belongs to the specified group.
+  */
+  /*opb
+    param
+      name=RETURN
+      use_scalar_result_cache=Y;
   */
   FUNCTION get_values(
     p_group_name IN VARCHAR2,
@@ -556,6 +581,11 @@ IS
         
       p_default
         The values to return if the specified property can not be found.
+  */
+  /*opb
+    param
+      name=RETURN
+      use_scalar_result_cache=Y;
   */
   FUNCTION get_values(
     p_group_name IN VARCHAR2,
