@@ -50,6 +50,14 @@ IS
   */
   cannot_insert_null EXCEPTION;
   PRAGMA EXCEPTION_INIT(cannot_insert_null, -01400);
+
+  /*
+    Use this to catch the exception thrown by Oracle
+    when you try to update a column to null that does not
+    allow null values.
+  */
+  cannot_update_null EXCEPTION;
+  PRAGMA EXCEPTION_INIT(cannot_update_null, -01407);
   
   /*
     Use this to catch the exception thrown by Oracle
