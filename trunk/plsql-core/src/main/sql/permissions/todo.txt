@@ -1,0 +1,2 @@
+make it possible to record comments when making changes - 
+  i.e. record who authorised the change, why it was made etc
