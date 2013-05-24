@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="windows-1252"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://plsql-core.butterfill.com/schema/plsql-core-module"
+            xmlns:tns="http://plsql-core.butterfill.com/schema/plsql-core-module"
+            elementFormDefault="qualified">
+    <xsd:element name="plsql-core-module">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="location" type="xsd:anyURI"/>
+                <xsd:element name="version" type="tns:moduleVersionType"/>
+                <xsd:element name="file-set">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="file" type="xsd:string" maxOccurs="unbounded"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="dependencies" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="dependency" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="location" type="xsd:anyURI"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <!-- 
+    module versions consist of at least one period, letter, didgit, underscore or hyphen 
+    -->
+    <xsd:simpleType name="moduleVersionType">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="([\.a-zA-Z0-9_\-])+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+</xsd:schema>

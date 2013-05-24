@@ -1,0 +1,114 @@
+<!-- 
+    Document   : index
+    Created on : 22-Oct-2008, 15:15:35
+    Author     : Butterp
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>plsql-core: event_mediator</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    </head>
+    <body>
+        <h1>plsql-core: event_mediator</h1>
+        
+        <h2>Overview</h2>
+        
+        <p>
+            The event mediator module enables PL/SQL code to publish and receive
+            events in a loosley coupled manner.
+        </p>
+        
+        <h2>How to</h2>
+        
+        <h3>Receive notification of an event</h3>
+    
+        To receive notification of an event, register as an observer. e.g.
+        <pre>
+          BEGIN
+            event_mediator.add_observer('task_complete', 'task_monitor');
+          END;</pre>
+        
+        This would register the PL/SQL package task_monitor as an observer
+        of the task_complete event.
+        
+    
+        
+        <h3>Notify observers of an event</h3>
+    
+        To notify observers of an event (i.e. publish an event), call event. e.g.
+
+        <pre>
+          PROCEDURE complete_admin_task(
+            p_task_id IN INTEGER)
+
+            ... code to complete the task ...
+
+            event_mediator.event(
+              'task_complete', 
+              'task_complete(''admin'', ' || p_task_id || ')');
+
+          END;
+
+          PROCEDURE complete_other_task(
+            p_task_id IN INTEGER)
+
+            ... code to complete the task ...
+
+            event_mediator.event(
+              'task_complete', 
+              'task_complete(''other'', ' || p_task_id || ')');
+
+          END;</pre>
+        
+        Calling the <code>complete_admin_task</code> procedure (above) with a 
+        <code>p_task_id</code> of 2, would cause event_mediator to call 
+        <code>task_complete('admin', 2)</code> on all registered observers. 
+        <br/>
+        With task_monitor registered as an observer of the task_complete event, 
+        this would mean executing 
+        <pre>
+          BEGIN 
+            task_monitor.task_complete('admin', 2); 
+          END;</pre>
+          
+        With no observers registered (as observers of the task_complete event)
+        this would mean doing nothing.
+
+        <h3>Remove an obsever</h3>
+        
+        To remove an obsever, call one of the remove_observer procedures. e.g.
+        <pre>
+          BEGIN
+            event_mediator.remove_observer('task_complete', 'task_monitor');
+          END;</pre>
+        
+        This will remove task_monitor as an observer of the task_complete event.
+
+    
+        <h2>Notes</h2>
+    
+        <p>
+            Event names and observer names are converted to lower case for both
+            storage and comparison.
+        </p>
+      
+        <p>
+            Observers must have publicly declared procedures that match the 
+            signature of the event being published.
+        </p>
+      
+        <p>
+            Any number of observers can be registered to receive an event.
+        </p>
+        
+        <p>
+            Any piece of PL/SQL code can publish an event.
+        </p>
+        
+        <p>
+            Any number of events can be published under the same event name.
+        </p>
+      
+    </body>
+</html>

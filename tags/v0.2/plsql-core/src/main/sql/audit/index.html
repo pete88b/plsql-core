@@ -1,0 +1,117 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>plsql-core: auditer</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    </head>
+    <body>
+        <h1>plsql-core: auditer</h1>
+        
+        <h2>Overview</h2>
+        
+        <p>
+            The auditer module provides a way of maintaining a history of 
+            changes made to data in database tables.
+        </p>
+        
+        The primary goals of this module are:
+        <ul>
+            <li>
+                Provide a complete record of all changes made to table data 
+                via the SQL commands DELETE, INSERT and UPDATE.
+            </li>
+            <li>
+                Make it easy to enable auditing with minimal impact on existing 
+                database objects.
+            </li>
+            <li>
+                Make it easy to show who did what, when they did it and why they
+                did it.
+            </li>
+        </ul>
+        
+        <h2 id="build_header">Build</h2>
+        
+        <ul>
+            <li>Build the logger module.</li>
+            <li>Run build.sql (for the audit module).</li>
+        </ul>
+        
+        <h2>How to</h2>
+        
+        <h3>Enable auditing</h3>
+        
+        <p>
+            You need to <a href="#build_header">build</a> auditer first.
+        </p>
+        
+        <p>
+            Auditing is enabled on a per <em>table</em> basis.
+            To enable auditing for a table run the SQL*Plus script
+            create_audit_trigger.
+        </p>
+        
+        E.g. To enable auditing for the table countries that is owned by hr:
+        
+        <pre>
+          SQL> @create_audit_trigger.sql hr countries
+          
+          Creating trigger hr.a$0
+
+          PL/SQL procedure successfully completed.
+        </pre>
+        
+        
+        <h3>Disable auditing</h3>
+        
+        <p>
+            Auditing is disabled on a per <em>schema</em> basis.
+            To disable auditing for a schema run the SQL*Plus script
+            drop_audit_triggers.
+        </p>
+        
+        E.g. To disable auditing for all tables owned by hr:
+        
+        <pre>
+          SQL> @drop_audit_triggers.sql hr
+          
+          Droping trigger hr.a$0
+          
+          PL/SQL procedure successfully completed.
+        </pre>
+        
+        <p>
+            <em>WARNING: </em> 
+            If you are dropping triggers from a schema that is not the same as 
+            the account you are logged in with, you may be told there are no
+            triggers to drop even when there are triggers that could be dropped.
+            This is because the drop script uses the view all_source, which
+            will only show you source code that you have access to.
+            If you can log on with a DBA account, you will not have this 
+            problem.
+        </p>
+        
+        <h2>Notes</h2>
+        
+        The audit_events_data table saves ROWID's in a column of VARCHAR2
+        datatype (rather than a column of ROWID datatype).
+        <br/>
+        The following trigger fails to compile with PLS-00382: 
+        expression is of wrong type:
+        <pre>
+            CREATE OR REPLACE TRIGGER hr.demo
+              AFTER INSERT ON hr.countries  
+              FOR EACH ROW
+            DECLARE
+              l_row_id ROWID;
+            BEGIN
+              l_row_id := :NEW.ROWID;
+            END;
+        </pre>
+        This will compile after changing 
+        <code>l_row_id ROWID</code> to 
+        <code>l_row_id VARCHAR2(2000)</code>.
+        
+    </body>
+</html>
