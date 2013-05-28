@@ -19,4 +19,7 @@ PROMPT ___ Start of types build.sql ___
 PROMPT Creating types package specification
 @@types.spc
 
+PROMPT Creating types package body
+@@types.bdy
+
 PROMPT ___ End of types build.sql ___

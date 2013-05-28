@@ -14,38 +14,47 @@
  * limitations under the License.
  */
 
-CREATE OR REPLACE PACKAGE types 
+CREATE OR REPLACE PACKAGE BODY types 
 IS
-
-  TYPE varchar_table IS TABLE OF VARCHAR2(32767)
-  INDEX BY BINARY_INTEGER;
-  
-  TYPE number_table IS TABLE OF NUMBER
-  INDEX BY BINARY_INTEGER;
-  
-  TYPE integer_table IS TABLE OF INTEGER
-  INDEX BY BINARY_INTEGER;
 
   /*
     Returns a new varchar_table.
-    It is expected that the main use of this function is to provide default values for paramters.
   */
   FUNCTION new_varchar_table
-  RETURN varchar_table;
+  RETURN varchar_table
+  IS
+    l_result varchar_table;
+
+  BEGIN
+    RETURN l_result;
+
+  END;
 
   /*
     Returns a new number_table.
-    It is expected that the main use of this function is to provide default values for paramters.
   */
   FUNCTION new_number_table
-  RETURN number_table;
+  RETURN number_table
+  IS
+    l_result number_table;
+
+  BEGIN
+    RETURN l_result;
+
+  END;
 
   /*
     Returns a new integer_table.
-    It is expected that the main use of this function is to provide default values for paramters.
   */
   FUNCTION new_integer_table
-  RETURN integer_table;
+  RETURN integer_table
+  IS
+    l_result integer_table;
+
+  BEGIN
+    RETURN l_result;
+
+  END;
   
 END types;
 /
