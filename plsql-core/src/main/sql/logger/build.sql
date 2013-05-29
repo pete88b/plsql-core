@@ -23,13 +23,13 @@ PROMPT ___ Start of logger build.sql ___
 DECLARE
   e_table_or_view_not_found EXCEPTION;
   PRAGMA EXCEPTION_INIT(e_table_or_view_not_found, -00942);
-  
+
   e_sequence_not_found EXCEPTION;
   PRAGMA EXCEPTION_INIT(e_sequence_not_found, -02289);
-  
+
   e_object_not_found EXCEPTION;
   PRAGMA EXCEPTION_INIT(e_object_not_found, -04043);
-  
+
   e_trigger_not_found EXCEPTION;
   PRAGMA EXCEPTION_INIT(e_trigger_not_found, -04080);
 
@@ -50,7 +50,7 @@ DECLARE
     ELSE
       DBMS_OUTPUT.PUT_LINE(s);
     END IF;
-    
+
   -- Let caller module handle any exceptions raised
   END p;
 
@@ -64,54 +64,54 @@ DECLARE
   BEGIN
     -- Always feedback the statement that we're about to execute
     p(p_sql);
-    
+
     IF (p_handle_exceptions)
     THEN
       -- If we're handling exceptions we'll attempt to execute the
       -- statement within an anonymous block, handling 'not found' execptions.
-      -- Anything other than e_table_or_view_not_found, e_sequence_not_found, 
+      -- Anything other than e_table_or_view_not_found, e_sequence_not_found,
       -- e_object_not_found or e_trigger_not_found will propogate to the caller
       <<try_sql>>
       BEGIN
         EXECUTE IMMEDIATE p_sql;
         -- Feedback done only if the statement ran without error
         p('Done');
-        
+
       EXCEPTION
         WHEN e_table_or_view_not_found
         THEN
           p('Table or View not found');
-        
+
         WHEN e_sequence_not_found
         THEN
           p('Sequence not found');
-        
+
         WHEN e_object_not_found
         THEN
           p('Object not found');
-        
+
         WHEN e_trigger_not_found
         THEN
           p('Trigger not found');
-        
-      END try_sql; 
-      
+
+      END try_sql;
+
     ELSE
       -- If we're not handling exceptions, we'll let all exceptions
       -- propogate to the caller
       EXECUTE IMMEDIATE p_sql;
       -- feedback done only if the statement ran without error
       p('Done');
-      
+
     END IF; -- IF (UPPER(feedback) = yes_C)
-  
+
   EXCEPTION
     WHEN e_success_with_compilation_err
     THEN
       RAISE_APPLICATION_ERROR(
         -20000,
         'Success with compilation error');
-      
+
   END exec;
 
 BEGIN
@@ -122,9 +122,9 @@ BEGIN
     exec('DROP TABLE logger_flags', TRUE);
     exec('DROP TABLE logger_feedback_data', TRUE);
     exec('DROP TABLE logger_error_data', TRUE);
-    
-  END IF;  
-    
+
+  END IF;
+
   exec('
     CREATE SEQUENCE logger_data_log_id
       MINVALUE -99999999999999999999999999
@@ -142,7 +142,7 @@ BEGIN
       log_level INTEGER
       )
   ');
-  
+
   exec('
     CREATE TABLE logger_feedback_data (
       log_date          DATE,
@@ -180,7 +180,7 @@ BEGIN
       log_audsid        NUMBER
       )
   ');
-  
+
 END;
 /
 
@@ -189,44 +189,44 @@ END;
 PROMPT Creating view logger_data_all
 CREATE OR REPLACE VIEW logger_data_all
 AS
-SELECT log_date, log_user, log_id, 
-       log_seq, 'ERROR (' || log_level || ')' AS log_level, log_data, 
-       module_owner, module_name, module_line, 
-       module_type, module_call_level, error_message, 
-       error_code, error_backtrace, call_stack, 
+SELECT log_date, log_user, log_id,
+       log_seq, 'ERROR (' || log_level || ')' AS log_level, log_data,
+       module_owner, module_name, module_line,
+       module_type, module_call_level, error_message,
+       error_code, error_backtrace, call_stack,
        log_audsid, 'error' AS source
   FROM logger_error_data
  UNION ALL
-SELECT log_date, log_user, log_id, 
-       log_seq, DECODE(log_level, 98, 'enter', 99, 'exit', 200, 'INFO', 500, 'WARN', log_level), log_data, 
-       module_owner, module_name, module_line, 
-       module_type, module_call_level, '', 
-       TO_NUMBER(NULL), '', '', 
+SELECT log_date, log_user, log_id,
+       log_seq, DECODE(log_level, 98, 'enter', 99, 'exit', 200, 'INFO', 500, 'WARN', log_level), log_data,
+       module_owner, module_name, module_line,
+       module_type, module_call_level, '',
+       TO_NUMBER(NULL), '', '',
        log_audsid, 'feedback'
   FROM logger_feedback_data
- ORDER BY log_date desc, log_id desc;
+ ORDER BY log_date desc, log_id desc, log_seq desc;
 
 PROMPT Creating view logger_data_recent
 CREATE OR REPLACE VIEW logger_data_recent
 AS
-SELECT log_date, log_user, log_id, 
-       log_seq, 'ERROR (' || log_level || ')' AS log_level, log_data, 
-       module_owner, module_name, module_line, 
-       module_type, module_call_level, error_message, 
-       error_code, error_backtrace, call_stack, 
+SELECT log_date, log_user, log_id,
+       log_seq, 'ERROR (' || log_level || ')' AS log_level, log_data,
+       module_owner, module_name, module_line,
+       module_type, module_call_level, error_message,
+       error_code, error_backtrace, call_stack,
        log_audsid, 'error' AS source
   FROM logger_error_data
  WHERE log_date > SYSDATE - (1/24/60)
  UNION ALL
-SELECT log_date, log_user, log_id, 
+SELECT log_date, log_user, log_id,
        log_seq, DECODE(log_level, 98, 'enter', 99, 'exit', 200, 'INFO', 500, 'WARN', log_level), log_data,
-       module_owner, module_name, module_line, 
-       module_type, module_call_level, '', 
-       TO_NUMBER(NULL), '', '', 
+       module_owner, module_name, module_line,
+       module_type, module_call_level, '',
+       TO_NUMBER(NULL), '', '',
        log_audsid, 'feedback'
   FROM logger_feedback_data
  WHERE log_date > SYSDATE - (1/24/60)
- ORDER BY log_date desc, log_id desc;
+ ORDER BY log_date desc, log_id desc, log_seq desc;
 
 -- Compile package specifications
 PROMPT Creating logger stack utils specification
@@ -250,16 +250,16 @@ VARIABLE db_compatibility VARCHAR2(2000);
 
 BEGIN
   -- Get the database version for logger_error body compilation
-  -- Note: this is in it's own PL/SQL block so that is it not effected by 
+  -- Note: this is in it's own PL/SQL block so that is it not effected by
   -- exceptions raised by other code. e.g. object name in use.
   DBMS_UTILITY.DB_VERSION(:db_version, :db_compatibility);
-  
+
   DBMS_OUTPUT.PUT_LINE('Found database version: ' || :db_version || CHR(10));
 
 END;
 /
 
--- 
+--
 COLUMN logger_error_body NEW_VALUE logger_error_body NOPRINT
 SELECT DECODE(SUBSTR(LTRIM(:db_version), 2, 1),
               '.', 'logger_error_pre_10.bdy',
