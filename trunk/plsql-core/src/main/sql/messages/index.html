@@ -7,35 +7,41 @@
     </head>
     <body>
         <h1>plsql-core: messages</h1>
-        
+
         <h2>Overview</h2>
-        
+
         <p>
-            The messages module defines a standard interface for sending 
-            application messages.
+            The messages module has been replaced with the user_messages module
+            and has been deprecated.
         </p>
-        
+
         <p>
-            This module provides a "default" implementation that sends 
-            messages to the event mediator. 
+            This module provides a "default" implementation that sends
+            messages to user_messages.
+        </p>
+
+        <p>
+            This module provides an alternative implementation that sends
+            messages to the event mediator.
             <br/>
-            Using this implementation, anyone interested in receiving messages 
+            Using this implementation, anyone interested in receiving messages
             can just register as an observer of the 'message' event.
-        </p> 
+        </p>
 
 
         <h2>Example</h2>
-        
-        The following example (which can be run in SQL*Plus) creates the package 
+
+        Using the event mediator implementation, the following example
+        (which can be run in SQL*Plus) creates the package
         <code>messages_demo</code> to receive 'message' events.
         <br/>
-        Note: you will need to have built the logger, event_mediator and 
+        Note: you will need to have built the logger, event_mediator and
         messages modules first.
         <br/>
 
         <pre>
             -- create the demo package spec
-            CREATE OR REPLACE PACKAGE messages_demo 
+            CREATE OR REPLACE PACKAGE messages_demo
             IS
               PROCEDURE add_message(
                 p_level IN VARCHAR2,
@@ -44,9 +50,9 @@
               );
             END;
             /
-            
+
             -- create the demo package body
-            CREATE OR REPLACE PACKAGE BODY messages_demo 
+            CREATE OR REPLACE PACKAGE BODY messages_demo
             IS
               PROCEDURE add_message(
                 p_level IN VARCHAR2,
@@ -57,34 +63,34 @@
               BEGIN
                 DBMS_OUTPUT.PUT_LINE(
                   'Start of messages_demo.add_message');
-                  
+
                 DBMS_OUTPUT.PUT_LINE(
                   'p_level=' || p_level ||
                   ', p_summary=' || p_summary ||
                   ', p_detail=' || p_detail);
-                  
+
               END;
-              
+
             END;
             /
-            
+
             -- register the demo package as an observer of the 'message' event
             BEGIN
               event_mediator.add_observer('message', 'messages_demo');
             END;
             /
-            
+
             -- enable dbms_output
             SET SERVEROUTPUT ON SIZE 1000000
-            
+
             -- send a couple of message via the message package
             BEGIN
               messages.add_message(
                 messages.message_level_debug, 'summary one', 'detail one');
-                
+
               messages.add_message(
                 messages.message_level_info, 'summary 2', 'detail 2');
-                
+
             END;
             /
         </pre>

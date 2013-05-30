@@ -34,8 +34,6 @@ AS
   )
   RETURN VARCHAR2
   IS
-    l_message_summary VARCHAR2(32767);
-    l_message_detail VARCHAR2(32767);
     l_flag_label VARCHAR2(32767) := get_flag_label(p_old_log_level, p_old_log_user);
     
   BEGIN
@@ -50,18 +48,19 @@ AS
 
     IF (SQL%ROWCOUNT = 0)
     THEN
-      l_message_summary := 'Logger flag ' || l_flag_label || ' not deleted';
-      l_message_detail := 'This flag may have been deleted or updated by another session';
+      user_messages.add_info_message(
+        'Logger flag {1} not deleted. It may have been deleted or updated by another session',
+        user_messages.add_argument(1, l_flag_label));
+
     ELSE
-      l_message_summary := 'Logger flag ' || l_flag_label || ' deleted';
+      user_messages.add_info_message(
+        'Logger flag {1} deleted',
+        user_messages.add_argument(1, l_flag_label));
       -- no point in doing a flag check. removing a flag will not have an effect
+
     END IF;
 
     COMMIT;
-
-    messages.add_message(
-      messages.message_level_info,
-      l_message_summary, l_message_detail);
 
     RETURN NULL;
 
@@ -69,11 +68,11 @@ AS
     WHEN OTHERS
     THEN
       logger.error('Failed to delete logger flag ' || l_flag_label);
-
-      messages.add_message(
-        messages.message_level_error,
-        'Failed to delete logger flag ' || l_flag_label,
-        SQLERRM);
+      
+      user_messages.add_error_message(
+        'Failed to delete logger flag {1}. {2}',
+        user_messages.add_argument(1, l_flag_label,
+        user_messages.add_argument(2, SQLERRM)));
 
     RETURN 'error';
 
@@ -106,9 +105,9 @@ AS
     -- force a flag check so that this change takes effect now
     logger_utils.check_flags;
 
-    messages.add_message(
-      messages.message_level_info,
-      'Logger flag ' || l_flag_label || ' created', NULL);
+    user_messages.add_info_message(
+        'Logger flag {1} created',
+        user_messages.add_argument(1, l_flag_label));
 
     RETURN NULL;
 
@@ -117,10 +116,10 @@ AS
     THEN
       logger.error('Failed to create logger flag ' || l_flag_label);
 
-      messages.add_message(
-        messages.message_level_error,
-        'Failed to create logger flag ' || l_flag_label,
-        SQLERRM);
+      user_messages.add_error_message(
+        'Failed to create logger flag {1}. {2}',
+        user_messages.add_argument(1, l_flag_label,
+        user_messages.add_argument(2, SQLERRM)));
 
     RETURN 'error';
 
@@ -135,8 +134,6 @@ AS
   )
   RETURN VARCHAR2
   IS
-    l_message_summary VARCHAR2(32767);
-    l_message_detail VARCHAR2(32767);
     l_flag_label VARCHAR2(32767) := get_flag_label(p_old_log_level, p_old_log_user);
 
   BEGIN
@@ -153,19 +150,19 @@ AS
 
     IF (SQL%ROWCOUNT = 0)
     THEN
-      l_message_summary := 'Logger flag ' || l_flag_label || ' not updated';
-      l_message_detail := 'This flag may have been deleted or updated by another session';
+      user_messages.add_info_message(
+        'Logger flag {1} not updated. It may have been deleted or updated by another session',
+        user_messages.add_argument(1, l_flag_label));
+
     ELSE
-      l_message_summary := 'Logger flag ' || l_flag_label || ' updated';
+      user_messages.add_info_message(
+        'Logger flag {1} not updated',
+        user_messages.add_argument(1, l_flag_label));
       -- force a flag check so that this change takes effect now
       logger_utils.check_flags;
     END IF;
 
     COMMIT;
-
-    messages.add_message(
-      messages.message_level_info,
-      l_message_summary, l_message_detail);
 
     RETURN NULL;
 
@@ -174,10 +171,10 @@ AS
     THEN
       logger.error('Failed to update logger flag ' || l_flag_label);
 
-      messages.add_message(
-        messages.message_level_error,
-        'Failed to update logger flag ' || l_flag_label,
-        SQLERRM);
+      user_messages.add_error_message(
+        'Failed to update logger flag {1}. {2}',
+        user_messages.add_argument(1, l_flag_label,
+        user_messages.add_argument(2, SQLERRM)));
 
     RETURN 'error';
 

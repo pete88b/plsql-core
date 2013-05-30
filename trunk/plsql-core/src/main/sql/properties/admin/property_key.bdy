@@ -1,56 +1,53 @@
-PACKAGE BODY property_key
+CREATE OR REPLACE PACKAGE BODY property_key
 IS
 
   /*
     Deletes a Property Key by primary key.
   */
   PROCEDURE del(
-    p_key_id IN INTEGER 
+    p_key_id IN INTEGER
   )
   IS
     l_key VARCHAR2(32767);
-    
+
   BEGIN
     logger.entering('del');
- 
+
     logger.fb(
       'p_key_id=' || p_key_id);
- 
-    DELETE FROM 
+
+    DELETE FROM
       property_key_data
     WHERE
       key_id = p_key_id
     RETURNING
       key INTO l_key;
- 
+
     IF (SQL%ROWCOUNT = 0)
     THEN
-      messages.add_message(
-        messages.message_level_info,
-        'Key "' || l_key || '" not deleted',
-        'This row has already been deleted');
- 
+      user_messages.add_info_message(
+        'Key not deleted. This row has already been deleted');
+
     ELSE
-      messages.add_message(
-        messages.message_level_info,
-        'Key "' || l_key || '" deleted',
-        NULL);
- 
+      user_messages.add_info_message(
+        'Key "{1}" deleted',
+        user_messages.add_argument(1, l_key));
+
     END IF;
- 
+
     COMMIT;
-    
+
     logger.exiting('del');
-    
+
   EXCEPTION
     WHEN OTHERS
     THEN
       ROLLBACK;
       logger.error('del failed');
       RAISE;
- 
+
   END del;
- 
+
 
   /*
     Creates a Property Key returning it's new primary key value.
@@ -60,52 +57,46 @@ IS
     p_key_description IN VARCHAR2,
     p_single_value_per_key IN VARCHAR2,
     p_group_id IN INTEGER,
-    p_key IN VARCHAR2 
+    p_key IN VARCHAR2
   )
   IS
   BEGIN
     logger.entering('ins');
- 
+
     logger.fb(
-      'p_key_description=' || p_key_description || 
-      ', p_single_value_per_key=' || p_single_value_per_key || 
-      ', p_group_id=' || p_group_id || 
+      'p_key_description=' || p_key_description ||
+      ', p_single_value_per_key=' || p_single_value_per_key ||
+      ', p_group_id=' || p_group_id ||
       ', p_key=' || p_key);
- 
+
     IF (p_single_value_per_key IS NULL)
     THEN
-      messages.add_message(
-        messages.message_level_warning,
-        'Key not created',
-        'Single value per key must not be null');
-        
+      user_messages.add_warn_message(
+        'Key not created. Single value per key must not be null');
+
       RETURN;
-      
+
     END IF;
-    
+
     IF (p_key IS NULL)
     THEN
-      messages.add_message(
-        messages.message_level_warning,
-        'Key not created',
-        'Please provide a key');
-        
+      user_messages.add_warn_message(
+        'Key not created. Please provide a key');
+
       RETURN;
-      
+
     END IF;
-    
+
     IF (p_key LIKE '%#%')
     THEN
-      messages.add_message(
-        messages.message_level_warning,
-        'Key not created',
-        'Keys must not contain the pound character "#"');
-        
+      user_messages.add_warn_message(
+        'Key not created, Keys must not contain the pound character "#"');
+
       RETURN;
-      
+
     END IF;
-            
-    
+
+
     INSERT INTO property_key_data(
       key_description,
       single_value_per_key,
@@ -117,35 +108,33 @@ IS
       p_group_id,
       p_key)
     RETURNING
-      key_id 
+      key_id
     INTO
       p_key_id;
- 
-    messages.add_message(
-      messages.message_level_info,
-      'Key "' || p_key || '" created',
-      NULL);
- 
+
+    user_messages.add_info_message(
+      'Key "{1}" created',
+        user_messages.add_argument(1, p_key));
+
     COMMIT;
-    
+
     logger.exiting('ins', p_key_id);
-    
+
   EXCEPTION
     WHEN DUP_VAL_ON_INDEX
     THEN
-      messages.add_message(
-        messages.message_level_info,
-        'Key "' || p_key || '" not created',
-        'This key already exists');
-        
+      user_messages.add_info_message(
+        'Key "{1}" not created. This key already exists',
+        user_messages.add_argument(1, p_key));
+
     WHEN OTHERS
     THEN
       ROLLBACK;
       logger.error('ins failed');
       RAISE;
- 
+
   END ins;
- 
+
 
   /*
     Updates a Property Key by primary key.
@@ -167,58 +156,55 @@ IS
 
   BEGIN
     logger.entering('upd');
- 
+
     logger.fb(
-      'p_key_id=' || p_key_id || 
-      ', p_key_description=' || p_key_description || 
-      ', p_single_value_per_key=' || p_single_value_per_key || 
+      'p_key_id=' || p_key_id ||
+      ', p_key_description=' || p_key_description ||
+      ', p_single_value_per_key=' || p_single_value_per_key ||
       ', p_old_single_value_per_key=' || p_old_single_value_per_key ||
-      ', p_group_id=' || p_group_id || 
+      ', p_group_id=' || p_group_id ||
       ', p_key=' || p_key ||
       ', p_old_key=' || p_old_key);
- 
+
     IF (p_single_value_per_key IS NULL)
     THEN
-      messages.add_message(
-        messages.message_level_warning,
-        'Key "' || p_old_key || '" not updated',
-        'You cannot set single value per key to null');
-        
+      user_messages.add_warn_message(
+        'Key "{1}" not updated. You cannot set single value per key to null',
+        user_messages.add_argument(1, p_old_key));
+
       RETURN;
-      
+
     END IF;
-    
+
     IF (p_key IS NULL)
     THEN
-      messages.add_message(
-        messages.message_level_warning,
-        'Key "' || p_old_key || '" not updated',
-        'You cannot set a key to null');
-        
+      user_messages.add_warn_message(
+        'Key "{1}" not updated. You cannot set a key to null',
+        user_messages.add_argument(1, p_old_key));
+
       RETURN;
-      
+
     END IF;
-    
+
     IF (p_key LIKE '%#%')
     THEN
-      messages.add_message(
-        messages.message_level_warning,
-        'Key "' || p_old_key || '" not updated',
-        'Keys must not contain the pound character "#"');
-        
+      user_messages.add_warn_message(
+        'Key "{1}" not updated. Keys must not contain the pound character "#"',
+        user_messages.add_argument(1, p_old_key));
+
       RETURN;
-      
+
     END IF;
 
     IF (p_single_value_per_key != p_old_single_value_per_key)
     THEN
       logger.fb('single_value_per_key is being updated');
-      
+
       -- if the key already exists, we may have to update property_value_data.
       -- lock both tables that we may affect
       LOCK TABLE property_value_data IN EXCLUSIVE MODE NOWAIT;
       LOCK TABLE property_key_data IN EXCLUSIVE MODE NOWAIT;
-      
+
       /*
         We need to update values if:
           - The key we will be updating has a value and
@@ -235,7 +221,7 @@ IS
         logger.fb('found one value. values need update');
 
         l_values_need_update := TRUE;
-        
+
         -- update single value per key for the value that we'll re-insert
         l_value_data_row.single_value_per_key := p_single_value_per_key;
 
@@ -244,7 +230,7 @@ IS
         WHERE key_id = p_key_id;
 
         logger.fb(SQL%ROWCOUNT || ' values deleted');
-        
+
       EXCEPTION
         WHEN TOO_MANY_ROWS
         THEN
@@ -252,13 +238,13 @@ IS
           -- this is only a problem if we're changing to single value per key
           IF (p_single_value_per_key = 'Y')
           THEN
-            messages.add_message(
-              messages.message_level_warning,
-              'Key "' || p_old_key || '" not updated',
-              'You cannot change this key to single value per key as multiple values exist');
+            user_messages.add_warn_message(
+              'Key "{1}" not updated. ' ||
+              ' You cannot change this key to single value per key as multiple values exist',
+              user_messages.add_argument(1, p_old_key));
             --
             RETURN;
-            
+
           END IF;
 
         WHEN NO_DATA_FOUND
@@ -268,9 +254,9 @@ IS
           l_values_need_update := FALSE;
 
       END get_value;
-      
+
     END IF;
-    
+
     -- always update the key
     UPDATE
       property_key_data
@@ -278,7 +264,7 @@ IS
       key_description = p_key_description,
       single_value_per_key = p_single_value_per_key,
       group_id = p_group_id,
-      key = p_key 
+      key = p_key
     WHERE
       key_id = p_key_id;
 
@@ -306,34 +292,32 @@ IS
 
     -- always commit
     COMMIT;
-      
-    messages.add_message(
-      messages.message_level_info,
+
+    user_messages.add_info_message(
       'Key "' || p_key || '" updated',
-      NULL);
-    
+        user_messages.add_argument(1, p_key));
+
     logger.exiting('upd');
-    
+
   EXCEPTION
     WHEN DUP_VAL_ON_INDEX
     THEN
-      messages.add_message(
-        messages.message_level_warning,
-        'Key  "' || p_old_key || '" not updated',
-        'The key you wanted to update to already exists');
-     
+      user_messages.add_warn_message(
+        'Key  "{1}" not updated. The key you wanted to update to already exists',
+        user_messages.add_argument(1, p_old_key));
+
     WHEN OTHERS
     THEN
       ROLLBACK;
       logger.error('upd failed');
       RAISE;
- 
+
   END upd;
- 
-  
+
+
   /*
     Returns all keys of this group.
-  */   
+  */
   FUNCTION get_values(
     p_key_id IN INTEGER,
     p_value IN VARCHAR2
@@ -341,27 +325,27 @@ IS
   RETURN SYS_REFCURSOR
   IS
     l_result SYS_REFCURSOR;
-    
+
   BEGIN
     logger.entering('get_values');
-    
+
     OPEN l_result FOR
     SELECT
       *
-    FROM 
+    FROM
       property_value_data
-    WHERE 
+    WHERE
       key_id = p_key_id
     AND (
       UPPER(value) LIKE '%' || UPPER(p_value) || '%'
       OR value IS NULL AND p_value IS NULL)
-    ORDER BY 
+    ORDER BY
       sort_order;
-     
+
     RETURN l_result;
-    
+
   END get_values;
-  
-  
+
+
 END property_key;
 /

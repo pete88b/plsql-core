@@ -169,6 +169,10 @@ IS
     Allows p_permission_allowed_id to p_permission_id.
   */
   /*opb
+    param
+      name=p_permission_id
+      field=permission_id;
+
     invalidate_cached
       name=this;
   */
@@ -183,10 +187,6 @@ IS
   /*opb
     param
       name=p_permission_id
-      field=parent_permission_id;
-      
-    param
-      name=p_permission_denied_id
       field=permission_id;
       
     invalidate_cached
