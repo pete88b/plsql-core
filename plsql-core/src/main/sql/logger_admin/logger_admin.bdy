@@ -82,11 +82,11 @@ IS
       EXCEPTION
         WHEN OTHERS
         THEN
-          messages.add_message(
-            messages.message_level_error,
-            'Specified date format "' || p_date_format || '" is invalid. ' ||
-            'The default format "hh24:mi:ss" was used instead',
-            SQLERRM);
+          user_messages.add_error_message(
+            'Specified date format "{1}" is invalid. ' ||
+            'The default format "hh24:mi:ss" was used instead. {2}',
+            user_messages.add_argument(1, p_date_format,
+            user_messages.add_argument(2, SQLERRM)));
 
       END;
 

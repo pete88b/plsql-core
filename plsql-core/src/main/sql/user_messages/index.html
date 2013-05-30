@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>plsql-core: user_messages</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    </head>
+    <body>
+        <h1>plsql-core: user_messages</h1>
+
+        <h2>Overview</h2>
+
+        <p>
+            The user_messages module defines a standard interface for sending
+            messages to users from PL/SQL.
+        </p>
+
+        <p>
+            This module also provides a "default" implementation that saves
+            messages in a temp table.
+        </p>
+
+
+        <h2>Examples</h2>
+
+        All examples can be run in SQL*Plus;
+
+        <p>
+            Although these examples do all of the work to display messages, it is expected
+            that your PL/SQL code will use only the add_message procedures.
+            Fetching and displaying the messages would be handled by user interface code.
+        </p>
+
+        <h3>Example (using the default implementation)</h3>
+
+        The following example creates a message (in the anonymous PL/SQL block)
+        and retrieves the output directly from the user_message_temp table.
+
+        <pre>
+            begin
+              user_messages.add_info_message(
+                'doing some work with {1} and {2}',
+                user_messages.add_argument(1, 'this',
+                user_messages.add_argument(2, 'that')));
+
+            end;
+            /
+
+            select * from user_message_temp;
+
+        </pre>
+
+        Note: This example does not clear messages.
+
+        <h3>Example (using the default implementation)</h3>
+
+        The following example creates a message (add_info_message),
+        retrieves the message (get_messages),
+        prints the message via dbms_output and then
+        clears the messages (clear_messages).
+
+        <pre>
+            declare
+              l_cursor sys_refcursor;
+              l_message_id INTEGER;
+              l_message_level VARCHAR2(32767);
+              l_message_detail VARCHAR2(32767);
+
+            begin
+              user_messages.add_info_message(
+                'doing some work with {1} and {2}',
+                user_messages.add_argument(1, 'this',
+                user_messages.add_argument(2, 'that')));
+
+              l_cursor := user_messages.get_messages;
+
+              loop
+                fetch l_cursor into l_message_id, l_message_level, l_message_detail;
+                exit when l_cursor%notfound;
+
+                dbms_output.put_line(l_message_id || ', ' || l_message_level || ', ' || l_message_detail);
+
+              end loop;
+
+              close l_cursor;
+
+              user_messages.clear_messages;
+
+            end;
+            /
+
+        </pre>
+
+    </body>
+
+</html>

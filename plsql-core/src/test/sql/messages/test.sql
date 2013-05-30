@@ -22,7 +22,7 @@ DECLARE
   BEGIN
     RAISE_APPLICATION_ERROR(-2000, p_message);
   END;
-  
+
   PROCEDURE assert(
     p_condition IN BOOLEAN,
     p_message IN VARCHAR2
@@ -35,20 +35,20 @@ DECLARE
         -20000, p_message);
     END IF;
   END;
-  
+
 BEGIN
   messages.check_message_level(messages.message_level_debug);
   messages.check_message_level(messages.message_level_error);
   messages.check_message_level(messages.message_level_fatal);
   messages.check_message_level(messages.message_level_info);
   messages.check_message_level(messages.message_level_warning);
-  
+
   messages.check_message_level('DEBUG');
   messages.check_message_level('ERROR');
   messages.check_message_level('FATAL');
   messages.check_message_level('INFO');
   messages.check_message_level('WARN');
-  
+
   BEGIN
     messages.check_message_level(NULL);
     fail;
@@ -59,7 +59,7 @@ BEGIN
         INSTR(SQLERRM, 'NULL is not a valid message level') > 0,
         'expected "NULL is not a valid message level". Got ' || sqlerrm);
   END;
-  
+
   BEGIN
     messages.check_message_level('x');
     fail;
@@ -70,14 +70,14 @@ BEGIN
         INSTR(SQLERRM, '"x" is not a valid message level') > 0,
         'expected "NULL is not a valid message level". Got ' || sqlerrm);
   END;
-  
-  -- TODO: Add observer and check data passed via event
+
+  -- TODO: check data saved in user_message_temp
   messages.add_message(messages.message_level_debug, 'summary', 'detail');
   messages.add_message(messages.message_level_error, 'summary', 'detail');
   messages.add_message(messages.message_level_fatal, 'summary', 'detail');
   messages.add_message(messages.message_level_info, 'summary', 'detail');
   messages.add_message(messages.message_level_warning, 'summary', 'detail');
-  
+
   BEGIN
     messages.add_message('x', 'summary', 'detail');
     fail;
@@ -88,5 +88,5 @@ BEGIN
         INSTR(SQLERRM, '"x" is not a valid message level') > 0,
         'expected "NULL is not a valid message level". Got ' || sqlerrm);
   END;
-  
+
 END;

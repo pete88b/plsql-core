@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>plsql-core: util</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    </head>
+    <body>
+        <h1>plsql-core: util</h1>
+
+        <h2>Overview</h2>
+
+        <p>
+            Provides general purpose utilities.
+        </p>
+
+
+        <h2>Examples</h2>
+
+        All examples can be run in SQL*Plus;
+
+        <h3>Example: Try to drop a table that does not exist (no error raised)</h3>
+
+        <pre>
+            begin
+              util.drop_if_exists('table does_not_exist');
+
+            end;
+            /
+        </pre>
+
+        <h3>Example: Use util.dummy_cursor</h3>
+
+        <p>
+            In this example, run_sql will return a dummy cursor if it can't create
+            a real cursor from the specified SQL.
+            A dummy cursor is just a cursor that has no rows
+            (so the columns of the cursor are irrelevant).
+        </p>
+
+        This is better than returning NULL, as it means clients of run_sql
+        (print_cursor in this case) don't have to deal with NULL cursors.
+        This could be more important if you're passing cursors to other languages
+        such as Java.
+
+        <pre>
+            declare
+              function run_sql(
+                p_sql in varchar2
+              )
+              return sys_refcursor
+              is
+                l_result sys_refcursor;
+
+              begin
+                open l_result for p_sql;
+                return l_result;
+
+              exception
+                when others
+                then
+                  dbms_output.put_line('failed to run sql ' || sqlerrm);
+                  return util.dummy_cursor;
+
+              end;
+
+              procedure print_cursor(
+                p_cursor in sys_refcursor
+              )
+              is
+                l_data varchar2(32767);
+
+              begin
+                loop
+                  fetch p_cursor into l_data;
+                  exit when p_cursor%notfound;
+
+                  dbms_output.put_line('l_data=' || l_data);
+
+                end loop;
+
+                close p_cursor;
+
+              end;
+
+            begin
+              dbms_output.put_line('output for select * from dual');
+              print_cursor(run_sql('select * from dual'));
+
+              dbms_output.put_line('output for select * from table_does_not_exist');
+              print_cursor(run_sql('select * from table_does_not_exist'));
+
+            end;
+            /
+        </pre>
+
+    </body>
+
+</html>

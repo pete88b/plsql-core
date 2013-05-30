@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-/*
-  Build script for messages.
-*/
+PROMPT ___ Start of util build.sql ___
+PROMPT
 
-PROMPT ___ Start of messages build.sql ___
+PROMPT Creating util
+@@util.pck
 
-@@messages.spc
-@@messages.bdy
-
-PROMPT ___ End of messages build.sql ___
+PROMPT ___ End of util build.sql ___

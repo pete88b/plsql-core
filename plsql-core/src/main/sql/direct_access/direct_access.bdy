@@ -43,10 +43,10 @@ IS
   EXCEPTION
     WHEN OTHERS
     THEN
-      messages.add_message(
-        messages.message_level_error,
-        'Failed to run SQL as query', SQLERRM);
-        
+      user_messages.add_error_message(
+        'Failed to run SQL as query. {1}',
+        user_messages.add_argument(1, SQLERRM));
+
       OPEN l_result FOR SELECT NULL FROM dual WHERE 1 = 2;
       
       RETURN l_result;
@@ -72,16 +72,15 @@ IS
     
     ROLLBACK;
     
-    messages.add_message(
-        messages.message_level_info,
-        'Run SQL succeded', NULL);
+    user_messages.add_info_message(
+      'Run SQL succeded');
     
   EXCEPTION
     WHEN OTHERS
     THEN
-      messages.add_message(
-        messages.message_level_error,
-        'Failed to run SQL', SQLERRM);
+      user_messages.add_error_message(
+        'Failed to run SQL. {1}',
+        user_messages.add_argument(1, SQLERRM));
         
   END run_sql_text;
   
